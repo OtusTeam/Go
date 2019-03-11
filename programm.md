@@ -35,7 +35,7 @@ Zero value
 Типы ошибок
 panic, recover и defer
 Стректрейсы
-Best practise обработки ошибок
+Best practiсe обработки ошибок
 
 1.5 Структуры
 Определение структур
