@@ -30,6 +30,22 @@ background-size: 130%
 
 ---
 
+# Небольшой тест
+
+.left-text[
+Пожалуйста, пройдите небольшой тест. 
+<br><br>
+Возможно вы уже многое знает об ошибках в Go =)
+<br><br>
+[https://forms.gle/gKwYGFtuT6XctBwm9](https://forms.gle/gKwYGFtuT6XctBwm9)
+]
+
+.right-image[
+![](img/gopher9.png)
+]
+
+---
+
 # Как вообще можно обработать ошибку ?
 
 .right-image[
@@ -94,6 +110,26 @@ func (e *MyError) Error() string {
 
 ---
 
+# Давайте попрактикуемся
+
+Напишите фукнцию которая вычисляет факториал числа N<br>
+Если N >= 15, нужно возвращать ошибку, т.к. возможно переполнение
+```
+1! = 1
+2! = 2
+N! = N*(N-1)!
+```
+
+Отредактируйте код на Go PlayGround
+
+[https://play.golang.com/p/YR-kCt_4iN6](https://play.golang.com/p/YR-kCt_4iN6)
+
+.right-image[
+![](img/gopher_low.png)
+]
+
+---
+
 # Тактика обработки ошибок
 
 Что можно сделать если функция вернула вам ошибку ?
@@ -119,26 +155,6 @@ if err != nil {
 
 Проигнорировать - *плохой вариант*
 
-
----
-
-# Давайте попрактикуемся
-
-Напишите фукнцию которая вычисляет факториал числа N<br>
-Если N >= 15, нужно возвращать ошибку, т.к. возможно переполнение
-```
-1! = 1
-2! = 2
-N! = N*(N-1)!
-```
-
-Отредактируйте код на Go PlayGround
-
-[https://play.golang.com/p/YR-kCt_4iN6](https://play.golang.com/p/YR-kCt_4iN6)
-
-.right-image[
-![](img/gopher_low.png)
-]
 
 ---
 
@@ -216,6 +232,20 @@ func RunUnsafeCode(code) (err error) {
 
 .right-image[
 ![](img/gopher5.png)
+]
+
+---
+
+# Небольшой тест
+
+.left-text[
+Проверим что мы узнали за этот урок
+<br><br>
+[https://forms.gle/gKwYGFtuT6XctBwm9](https://forms.gle/gKwYGFtuT6XctBwm9)
+]
+
+.right-image[
+![](img/gopher9.png)
 ]
 
 ---
