@@ -419,5 +419,3 @@ background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
 # Спасибо за внимание!
-
-### Вы можете написать его на [Go Playground](https://play.golang.org/p/WTK-j3MPIuU) <br> прямо сейчас!
