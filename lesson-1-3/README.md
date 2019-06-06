@@ -38,7 +38,7 @@ background-size: 130%
 <br><br>
 Возможно вы уже многое знаете про слайсы и словари в Go =)
 <br><br>
-[]()
+[https://forms.gle/tjn43RZYCSPyoU789](https://forms.gle/tjn43RZYCSPyoU789)
 ]
 
 .right-image[
@@ -490,11 +490,25 @@ func Set(key string, val string) {
 .left-text[
 Проверим что мы узнали за этот урок
 <br><br>
-[]()
+[https://forms.gle/tjn43RZYCSPyoU789](https://forms.gle/tjn43RZYCSPyoU789)
 ]
 
 .right-image[
 ![](img/gopher9.png)
+]
+
+---
+
+# Опрос
+
+.left-text[
+Заполните пожалуйста опрос
+<br><br>
+[https://otus.ru/polls/3590/](https://otus.ru/polls/3590/)
+]
+
+.right-image[
+![](img/gopher7.png)
 ]
 
 ---
