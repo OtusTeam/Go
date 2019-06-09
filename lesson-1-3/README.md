@@ -58,6 +58,8 @@ var arr [256]int        // фиксированная длинна
 
 var arr [10][10]string  // может быть многомерным 
 
+var arr [...]{1 ,2, 3}
+
 arr := [10]int{1,2,3,4,5}
 ```
 
@@ -252,7 +254,7 @@ s = AppendUniq(s, s2)
 ```
 s := []int{1,2,3}
 s2 := make([]int, len(s))
-copy(s2, s2)
+copy(s2, s)
 ```
 
 ---
@@ -275,7 +277,7 @@ s := []User{
   {"vasya", 19},
   {"petya", 18},
 }
-sort.Slice(s, func(i, j) bool {
+sort.Slice(s, func(i, j int) bool {
   return s[i].Age < s[j].Age
 })
 ```
@@ -310,7 +312,7 @@ var cache map[string]string     // не-инициализированный с�
 
 cache := map[string]string{}    // с помощью литерала, len(cache) == 0
 
-cache := map[string]strint{     // литерал с первоначальным значением
+cache := map[string]string{     // литерал с первоначальным значением
   "one":   "один",
   "two":   "два",
   "three": "три",
@@ -443,10 +445,10 @@ seq = append(seq, "hello")   // []string{"hello"}
 ```
 hostUsers := map[string][]string{}
 for _, user := range users {
-  if _, ok := ages[user.Host]; !ok {
-    ages[user.Host] = make([]string)
+  if _, ok := hostUsers[user.Host]; !ok {
+    hostUsers[user.Host] = make([]string)
   }
-  ages[user.Host] = append(ages[user.Host], user.Name)
+  hostUsers[user.Host] = append(hostUsers[user.Host], user.Name)
 }
 ```
 
@@ -454,7 +456,7 @@ for _, user := range users {
 ```
 hostUsers := map[string][]string{}
 for _, user := range users {
-  ages[user.Host] = append(ages[user.Host], user.Name)
+  hostUsers[user.Host] = append(hostUsers[user.Host], user.Name)
 }
 ```
 ---
