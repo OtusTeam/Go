@@ -262,17 +262,6 @@ func Write(w io.Writer, buf []byte) error {
 }
 ```
 
----
-
-# Антипаттерны проверки ошибок:
-
-Никогда не проверяйте error.Error
-
-```
-func Write(w io.Writer, buf []byte) {
-        w.Write(buf) // забыли проверить ошибку
-}
-```
 
 ---
 
