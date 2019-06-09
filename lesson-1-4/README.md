@@ -62,7 +62,7 @@ func Marshal(v interface{}) ([]byte, error) {
 
 # Интерфейс error
 
-
+Ошибки из стандартной библиотеки:
 
 ```
 package errors
@@ -77,61 +77,6 @@ type errorString struct {
 
 func (e *errorString) Error() string {
    return e.s
-}
-```
-
----
-
-# Обработка ошибок: sentinel values
-<br>
-
-```
-package io
-
-
-// ErrShortWrite means that a write accepted fewer bytes than requested
-// but failed to return an explicit error.
-var ErrShortWrite = errors.New("short write")
-
-// ErrShortBuffer means that a read required a longer buffer than was provided.
-var ErrShortBuffer = errors.New("short buffer")
-```
-
-Ошибки в таком случае - часть публичного API, это наименее гибкая стратегия:
-
-```
-if err == io.EOF {
-	...
-}
-```
-
----
-
-# Обработка ошибки как значения
-
-```
-scanner := bufio.NewScanner(input)
-for scanner.Scan() {
-    token := scanner.Text()
-    // process token
-}
-if err := scanner.Err(); err != nil {
-    // process the error
-}
-```
-
-vs
-
-```
-func (s *Scanner) Scan() (token []byte, error)
-
-scanner := bufio.NewScanner(input)
-for {
-    token, err := scanner.Scan()
-    if err != nil {
-        return err // or maybe break
-    }
-    // process token
 }
 ```
 
@@ -164,26 +109,62 @@ func (router HttpRouter) parse(reader *bufio.Reader) (Request, Response) {
 }
 ```
 
+
 ---
 
-
-# Проверка ошибок
-
-Теперь мы можем использовать проверку типов ошибок:
+# Ошибка - это значение
 
 ```
-for try := 0; try < 2; try++ {
-    file, err = os.Create(filename)
-    if err == nil {
-        return
+func (s *Scanner) Scan() (token []byte, error)
+
+scanner := bufio.NewScanner(input)
+for {
+    token, err := scanner.Scan()
+    if err != nil {
+        return err // or maybe break
     }
-    if e, ok := err.(*os.PathError); ok && e.Err == syscall.ENOSPC {
-        deleteTempFiles()  // Recover some space.
-        continue
-    }
-    return
+    // process token
 }
 ```
+
+мы можем сохранять его во внутренней структуре:
+
+```
+scanner := bufio.NewScanner(input)
+for scanner.Scan() {
+    token := scanner.Text()
+    // process token
+}
+if err := scanner.Err(); err != nil {
+    // process the error
+}
+```
+
+---
+
+# Обработка ошибок: sentinel values
+<br>
+
+```
+package io
+
+
+// ErrShortWrite means that a write accepted fewer bytes than requested
+// but failed to return an explicit error.
+var ErrShortWrite = errors.New("short write")
+
+// ErrShortBuffer means that a read required a longer buffer than was provided.
+var ErrShortBuffer = errors.New("short buffer")
+```
+
+Ошибки в таком случае - часть публичного API, это наименее гибкая стратегия:
+
+```
+if err == io.EOF {
+	...
+}
+```
+
 
 ---
 
