@@ -31,6 +31,314 @@ background-size: 130%
 
 ---
 
+# Области видимости и блоки
+<br>
+Блок (block) - это, возможно пустая, последовательность объявлений (declarations) и операторов (statements) в соответствующих фигурных скобках.
+<br>
+	- universe block - весь код проекта
+	- package block - весь код пакета
+	- file block - исходный код в файле
+	- local block - просто {}
+
+```
+func main() {
+    { // start outer block
+        a := 1
+        fmt.Println(a)
+        { // start inner block
+            b := 2
+            fmt.Println(b)
+        } // end inner block
+    } // end outer block
+}
+```
+
+---
+
+# Неявные блоки: for, if, switch, case
+
+```
+if i := 0; i >= 0 {
+    fmt.Println(i)
+}
+```
+
+```
+switch i := 2; i * 4 {
+case 8:
+    j := 0
+    fmt.Println(i, j)
+default:
+    // "j" is undefined here
+    fmt.Println(“default”)
+}// "j" is undefined here
+```
+
+---
+
+# Объявления
+
+Объявление (declaration) связывает непустой идентификатор с константой, типом, переменной, функцией, меткой (label) или пакетом. Каждый идентификатор в программе должен быть объявлен. Ни один идентификатор не может быть объявлен дважды в одном и том же блоке, и ни один идентификатор не может быть объявлен как в блоке файла, так и в блоке пакета.
+
+
+
+---
+
+# Область видимости
+
+- Область видимости предварительно объявленного идентификатора - это всеобщий блок (universe block).
+- Область видимости идентификатора, обозначающего константу, тип, переменную или функцию (но не метод), объявленную на верхнем уровне (вне какой-либо функции), это блок пакета.
+- Область видимости имени импортируемого пакета - это блок файла, содержащий объявление импорта.
+- Область видимости идентификатора, обозначающего приемник метода (method receiver), параметра функции или переменной результата, это тело функции.
+- Область видимости идентификатора константы или переменной, объявленного внутри функции, начинается в конце ConstSpec или VarSpec (ShortVarDecl для коротких объявлений переменных) и заканчивается в конце самого внутреннего содержащего блока.
+- Область видимости идентификатора типа, объявленного внутри функции, начинается с идентификатора в TypeSpec и заканчивается в конце самого внутреннего содержащего блока.
+- Идентификатор, объявленный в блоке, может быть повторно объявлен во внутреннем блоке. Пока идентификатор внутренней декларации находится в области видимости, он обозначает сущность, объявленную внутренней декларацией.
+
+
+---
+
+# Shadowing
+<br>
+Один идентификатор нельзя объявить два раза в одном блоке.
+Но можно объявить его во внутреннем блоке!
+<br>
+```
+v := "outer"
+fmt.Println(v)
+{
+    v := "inner"
+    fmt.Println(v)
+    {
+        fmt.Println(v)
+    }
+}
+{
+    fmt.Println(v)
+}
+fmt.Println(v)
+```
+
+```
+outer
+inner
+inner
+outer
+outer
+```
+
+---
+
+# Еще пример:
+
+```
+package main
+
+import "fmt"
+import "strconv"
+
+func parseInt(s string) (int, error) {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			return 0, err
+		}
+
+		if b {
+			n = 1
+		}
+	}
+	return n, err
+}
+
+func main() {
+	fmt.Println(parseInt("TRUE"))
+}
+```
+
+---
+
+# Объявление функции
+
+.left-image[
+   ![](img/functiondecl.png)
+  ]
+
+Интересное:
+- в го нет дефолтных значений для параметров
+- функция может возвращать несколько значений
+- функция - first class value, можем работать как с обычным значением
+- параметры в функцию передаются по значению
+
+---
+
+# Именованные функции
+
+могут декларироваться только на уровне пакета, вне тела другой функции, примеры:
+
+```
+func Hello() {
+    fmt.Println("Hello World!")
+}
+
+func greet(user string) {
+        fmt.Println("Hello " + user)
+}
+
+func add(x int, y int) int {
+        return x + y
+}
+
+func add(x, y int) int {
+        return x + y
+}
+```
+
+---
+
+# Функции
+
+могут возвращать несколько значений:
+
+
+```
+func addMult(a, b int) (int, int) {
+        return a + b, a * b
+}
+```
+
+```
+func SquaresOfSumAndDiff(a int64, b int64) (s int64, d int64) {
+        x, y := a + b, a - b
+        s = x * x
+        d = y * y
+        return // <=> return s, d
+}
+```
+
+---
+
+# Функции 
+
+могут быть вариадическими, то есть принимать неограниченное кол-во параметров
+
+
+```
+	fmt.Println("one", "two", "three", "four")	
+```
+
+```
+	someSlice = append(someSlice, "one", "two", "N")
+```
+<br>
+
+```
+func f(elem ...Type)
+```
+
+... - pack operator, он собирает все параметры типа Type в слайс, и он же их распаковывает.
+<br>
+Только последний параметр функции может быть вариадическим.
+
+---
+
+# Вариадические функции
+
+<br>
+
+```
+func sum(nums ...int) {
+    fmt.Print(nums, " ")
+    total := 0
+    for _, num := range nums {
+        total += num
+    }
+    fmt.Println(total)
+}
+
+func main() {
+    sum(1, 2)
+    sum(1, 2, 3)
+
+    nums := []int{1, 2, 3, 4}
+    sum(nums...)
+}
+```
+
+```
+[1 2] 3
+[1 2 3] 6
+[1 2 3 4] 10
+```
+
+
+---
+
+# Фунции могут быть анонимными:
+
+
+```
+func() {
+    fmt.Println("Hello!")
+}()  // Prints "Hello!"
+```
+
+
+---
+
+```
+package main
+
+import "fmt"
+
+var DoStuff func() = func() {
+  // Do stuff
+}
+
+func main() {
+  DoStuff()
+
+  DoStuff = func() {
+    fmt.Println("Doing stuff!")
+  }
+  DoStuff()
+
+  DoStuff = func() {
+    fmt.Println("Doing other stuff.")
+  }
+  DoStuff()
+}
+```
+
+
+
+# Функции
+
+могут быть рекурсивными:
+
+```
+// n! = n×(n-1)! where n >0
+func getFactorial(num int) int {
+        if num > 1 {
+                return num * getFactorial(num-1)
+        } else {
+                return 1 // 1! == 1
+        }
+}
+```
+
+но хвостовая рекурсия не оптимизируется:
+
+https://blog.gopheracademy.com/recursion/
+
+Go 2?
+https://github.com/golang/go/issues/22624
+
+
+---
+
+
+
 # Ошибки
 
 
@@ -60,7 +368,7 @@ func Marshal(v interface{}) ([]byte, error) {
 ---
 
 
-# Интерфейс error
+# errors.go
 
 Ошибки из стандартной библиотеки:
 
@@ -79,6 +387,25 @@ func (e *errorString) Error() string {
    return e.s
 }
 ```
+---
+
+# errors.go
+
+```
+	err := errors.New("Im an error")
+	if err != nil {
+		fmt.Print(err)
+	}
+```
+```
+	whoami := "error"
+	err := fmt.Errorf("Im an %s", whoami)
+	if err != nil {
+		fmt.Print(err)
+	}
+```
+
+
 
 ---
 
@@ -195,7 +522,7 @@ if err == io.EOF {
 # Проверка ошибок: типы
 
 ```
-err := something()
+err := readConfig()
 switch err := err.(type) {
 	case nil:
 	    // call succeeded, nothing to do
