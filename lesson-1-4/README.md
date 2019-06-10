@@ -29,6 +29,8 @@ background-size: 130%
   ### !проверить запись!
 ]
 
+
+
 ---
 
 # Области видимости и блоки
@@ -42,20 +44,28 @@ background-size: 130%
 
 ```
 func main() {
-    { // start outer block
+    { // начало блока 1
         a := 1
         fmt.Println(a)
-        { // start inner block
+        { // начало блока 2
             b := 2
             fmt.Println(b)
-        } // end inner block
-    } // end outer block
+        } // конец блока 2
+    } // конец блока 1
 }
 ```
 
 ---
 
-# Неявные блоки: for, if, switch, case
+# Неявные блоки: for, if, switch, case, select
+
+```
+// {
+for i := 0; i < 5; i++ {
+    fmt.Println(i)
+}
+// }
+```
 
 ```
 if i := 0; i >= 0 {
@@ -80,20 +90,155 @@ default:
 
 Объявление (declaration) связывает непустой идентификатор с константой, типом, переменной, функцией, меткой (label) или пакетом. Каждый идентификатор в программе должен быть объявлен. Ни один идентификатор не может быть объявлен дважды в одном и том же блоке, и ни один идентификатор не может быть объявлен как в блоке файла, так и в блоке пакета.
 
+```
+var a int
 
+type Student struct {
+	name string
+}
+
+const Pi float64 = 3.14159265358979323846
+```
+---
 
 ---
 
 # Область видимости
-
-- Область видимости предварительно объявленного идентификатора - это всеобщий блок (universe block).
+<br>
+- Область видимости предварительно объявленного идентификатора - это всеобщий блок (universe block)
+```
+bool, int32, int64, float64, …
+nil
+make, new, panic, …
+true or false
+```
 - Область видимости идентификатора, обозначающего константу, тип, переменную или функцию (но не метод), объявленную на верхнем уровне (вне какой-либо функции), это блок пакета.
-- Область видимости имени импортируемого пакета - это блок файла, содержащий объявление импорта.
-- Область видимости идентификатора, обозначающего приемник метода (method receiver), параметра функции или переменной результата, это тело функции.
-- Область видимости идентификатора константы или переменной, объявленного внутри функции, начинается в конце ConstSpec или VarSpec (ShortVarDecl для коротких объявлений переменных) и заканчивается в конце самого внутреннего содержащего блока.
-- Область видимости идентификатора типа, объявленного внутри функции, начинается с идентификатора в TypeSpec и заканчивается в конце самого внутреннего содержащего блока.
-- Идентификатор, объявленный в блоке, может быть повторно объявлен во внутреннем блоке. Пока идентификатор внутренней декларации находится в области видимости, он обозначает сущность, объявленную внутренней декларацией.
 
+```
+package mypackage
+
+import (
+	"fmt"
+)
+
+type Student struct {
+	name string
+}
+```
+
+---
+
+# Область видимости
+<br>
+
+- Область видимости имени импортируемого пакета - это блок файла, содержащий объявление импорта.
+```
+// sandbox.go
+package main
+import “fmt”
+func main() {
+	fmt.Println(“main”)
+	f()
+}
+```
+```
+// utils.go
+package main
+func f() {
+	fmt.Println(“f”)
+}
+```
+
+---
+
+# Область видимости
+<br>
+
+
+- Область видимости идентификатора, обозначающего приемник метода (method receiver), параметра функции или переменной результата, это тело функции.
+
+```
+type Student struct {
+	name string
+}
+
+func (s *Student) Name() string {
+	return s.name
+}
+```
+
+---
+
+# Область видимости
+<br>
+<br>
+- Область видимости идентификатора константы или переменной, объявленного внутри функции, начинается после объявления и заканчивается в конце самого внутреннего содержащего блока.
+
+<br>
+```
+func main() {
+    fmt.Println(v)
+    v := 1
+}
+```
+```
+func main() {
+	{
+		{
+			var a = 22
+			println(a)
+		}
+		println(a) // unresolved reference
+	}
+
+}
+```
+
+---
+
+# Область видимости
+<br>
+
+
+<br>
+- Область видимости идентификатора типа, объявленного внутри функции, начинается с идентификатора в TypeSpec и заканчивается в конце самого внутреннего содержащего блока.
+
+```
+package main
+
+func studentName(name string) string {
+	type Student struct {
+		name string
+	}
+
+	s := Student{name}
+
+	return s.name
+}
+
+func main() {
+	println(studentName("olga"))
+	student := Student{"alex"} // undefined: Student
+}
+```
+---
+
+# Область видимости
+<br>
+
+- Идентификатор, объявленный в блоке, может быть повторно объявлен во внутреннем блоке. Пока идентификатор внутренней декларации находится в области видимости, он обозначает сущность, объявленную внутренней декларацией.
+<br>
+```
+	{
+		var a = 4
+		println(a) // 4
+		{
+			println(a) // 4
+			var a = 22
+			println(a) // 22
+		}
+	}
+```
 
 ---
 
@@ -218,7 +363,7 @@ func SquaresOfSumAndDiff(a int64, b int64) (s int64, d int64) {
 
 ---
 
-# Функции 
+# Вариадические функции 
 
 могут быть вариадическими, то есть принимать неограниченное кол-во параметров
 
@@ -231,6 +376,11 @@ func SquaresOfSumAndDiff(a int64, b int64) (s int64, d int64) {
 	someSlice = append(someSlice, "one", "two", "N")
 ```
 <br>
+```
+func Printf(format string, a ...interface{}) (n int, err error) {
+	return Fprintf(os.Stdout, format, a...)
+}
+```
 
 ```
 func f(elem ...Type)
@@ -274,42 +424,54 @@ func main() {
 
 ---
 
-# Фунции могут быть анонимными:
+# Анонимные функции
 
+анонимная функция - определение функции, не связанное с идентификатором 
 
 ```
 func() {
     fmt.Println("Hello!")
-}()  // Prints "Hello!"
+}()  // "Hello!"
 ```
 
+```
+var foo func() = func() {
+    fmt.Println("Hello!")
+}
+foo() // Hello! 
+```
+
+```
+foo := func() {
+	fmt.Println("Hello!")
+}
+foo()
+```
 
 ---
 
+# Анонимные функции
+
+Зачем?
+
+можем, например, использовать кастомную сортировку:
+
 ```
-package main
-
-import "fmt"
-
-var DoStuff func() = func() {
-  // Do stuff
-}
-
-func main() {
-  DoStuff()
-
-  DoStuff = func() {
-    fmt.Println("Doing stuff!")
-  }
-  DoStuff()
-
-  DoStuff = func() {
-    fmt.Println("Doing other stuff.")
-  }
-  DoStuff()
-}
+people := []string{"Alice", "Bob", "Dave"}
+sort.Slice(people, func(i, j int) bool {
+    return len(people[i]) < len(people[j])
+})
+fmt.Println(people)
 ```
 
+---
+
+# Замыкания
+
+
+
+
+---
 
 
 # Функции
@@ -415,7 +577,7 @@ func (e *errorString) Error() string {
 В целом ок:
 
 ```
-func (router HttpRouter) parse(reader *bufio.Reader) (Request, Response) {
+func (router HttpRouter) parse(reader *bufio.Reader) (Request, error) {
   requestText, err := readCRLFLine(reader) //string, err Response
   if err != nil {
     //No input, or it doesn't end in CRLF
