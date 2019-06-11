@@ -341,6 +341,23 @@ func add(x, y int) int {
 
 ---
 
+# Именованные функции
+
+могут декларироваться только на уровне пакета, вне тела другой функции, примеры:
+
+```
+func Hello() string {
+
+	func Hello2() string { // !!! unresolved reference!
+		return "hello"
+	}
+
+	return Hello2()
+}
+```
+
+---
+
 # Функции
 
 могут возвращать несколько значений:
@@ -468,11 +485,99 @@ fmt.Println(people)
 
 # Замыкания
 
-
+Замыкание — это особый вид функции. Она определена в теле другой функции и создаётся каждый раз во время её выполнения. Синтаксически это выглядит как функция, находящаяся целиком в теле другой функции. При этом вложенная внутренняя функция содержит ссылки на локальные переменные внешней функции.
 
 
 ---
 
+# Замыкания
+
+
+```
+package main
+
+import "fmt"
+
+func intSeq() func() int {
+    i := 0
+    return func() int {
+        i++
+        return i
+    }
+}
+
+func main() {
+    nextInt := intSeq()
+
+    fmt.Println(nextInt()) // 1
+    fmt.Println(nextInt()) // 2
+    fmt.Println(nextInt()) // 3
+
+    newInts := intSeq()
+    fmt.Println(newInts()) // 1
+}
+```
+
+---
+
+# Замыкания
+
+
+Практическое применение: middleware
+
+
+```
+package main
+
+import (
+  "fmt"
+  "net/http"
+)
+
+func main() {
+  http.HandleFunc("/hello", hello)
+  http.ListenAndServe(":3000", nil)
+}
+
+func hello(w http.ResponseWriter, r *http.Request) {
+  fmt.Fprintln(w, "<h1>Hello!</h1>")
+}
+```
+
+---
+
+# Замыкания
+
+```
+package main
+
+import (
+  "fmt"
+  "net/http"
+  "time"
+)
+
+func main() {
+  http.HandleFunc("/hello", timed(hello))
+  http.ListenAndServe(":3000", nil)
+}
+
+func timed(f func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+  return func(w http.ResponseWriter, r *http.Request) {
+    start := time.Now()
+    f(w, r)
+    end := time.Now()
+    fmt.Println("The request took", end.Sub(start))
+  }
+}
+
+func hello(w http.ResponseWriter, r *http.Request) {
+  fmt.Fprintln(w, "<h1>Hello!</h1>")
+}
+```
+
+
+---
 
 # Функции
 
@@ -496,6 +601,107 @@ https://blog.gopheracademy.com/recursion/
 Go 2?
 https://github.com/golang/go/issues/22624
 
+
+
+---
+
+# Функции: сигнатуры и типы
+
+Тип функции определяет  набор всех функций с одним и тем же набором параметров и результатов (и их типов). Неинициализированная переменная типа функции - nil.
+
+Сигнатура - это "тип функции", примеры:
+
+```
+func()
+func(x int) int
+func(a, b int, z float32) (bool)
+func(prefix string, values ...int)
+```
+
+---
+
+# Функции: сигнатуры и типы
+
+```
+package main
+
+type SumFunc func(base int, arguments ...int) int
+
+func main() {
+
+	var summer SumFunc
+	summer = func(a int, args ...int) int {
+		for _, v := range(args) {
+			a = a + v
+		}
+		return a
+	}
+
+	println(summer(1, 2, 3, 4)) // 10
+}
+```
+
+---
+
+# Методы
+
+```
+type Employee struct {
+   name, surname string
+}
+
+func FullName(e Employee) string {
+   return e.name + " " + e.surname
+}
+
+func (e Employee) FullName() string {
+   return e.name + " " + e.surname
+}
+
+func main() {
+    print(Employee{"alexander", "davydov"}.FullName())
+    print(FullName(Employee{"alexander", "davydov"}))
+}
+```
+
+---
+
+# Методы
+
+- `T` должен быть определен в одном пакете в методом
+- `T` не должен быть указателем
+- `T` не должен быть интерфейсом
+
+Нельзя (явно) объявлять методы для:
+
+- встроенных типов ( `int` ,  `string`)
+- интерфейсов
+
+* опустил условие про определенный тип https://go101.org/article/type-system-overview.html#non-defined-type
+
+---
+
+# Методы
+
+можно навешивать на базовые типы!
+
+```
+
+type Age int
+
+func (age Age) LargerThan(a Age) bool {
+        return age > a
+}
+func (age *Age) Increase() {
+        *age++
+}
+
+func main() {
+    var a Age // 0
+    a = a + 1 // 1
+    a.Increase() //2
+}
+```
 
 ---
 
@@ -814,6 +1020,30 @@ func IsTemporary(err error) bool {
 ```
 
 ---
+
+# Stacktrace: github.com/pkg/errors
+
+<br>
+<br>
+
+```
+func Cause(err error) error {
+	type causer interface {
+		Cause() error
+	}
+
+	for err != nil {
+		cause, ok := err.(causer)
+		if !ok {
+			break
+		}
+		err = cause.Cause()
+	}
+	return err
+}
+```
+---
+
 
 # Defer, Panic и Recover: defer
 
