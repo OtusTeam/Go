@@ -29,6 +29,13 @@ background-size: 130%
   ### !проверить запись!
 ]
 
+---
+
+# О чем будем говорить:
+- области видимости, блоки
+- функции: вариадические, анонимные, замыкания, методы
+- ошибки: принципы обработки, best practices
+- panic, recover, defer
 
 
 ---
@@ -273,6 +280,29 @@ outer
 
 ---
 
+# Контрольный вопрос: сколько раз мы объявили x?
+
+```
+package main
+
+import "fmt"
+
+func f(x int) {
+	for x := 0; x < 10; x++ {
+		fmt.Println(x)
+	}
+}
+
+var x int
+
+func main() {
+	var x = 200
+	f(x)
+}
+```
+
+---
+
 # Еще пример:
 
 ```
@@ -300,6 +330,13 @@ func main() {
 	fmt.Println(parseInt("TRUE"))
 }
 ```
+
+---
+
+# Нужен ли интерактив?
+
+https://forms.gle/nan9N5fGJYRrZ3QE7
+
 
 ---
 
@@ -705,7 +742,34 @@ func main() {
 
 ---
 
+# Методы
 
+соответствуют имплицитным функциям:
+
+```
+type Book struct {
+	pages int
+}
+func (b Book) Pages() int {
+	return b.pages
+}
+func (b *Book) SetPages(pages int) {
+	b.pages = pages
+}
+
+
+func Book.Pages(b Book) int {
+	// The body is the same as the Pages method.
+	return b.pages
+}
+
+func (*Book).SetPages(b *Book, pages int) {
+	// The body is the same as the SetPages method.
+	b.pages = pages
+}
+```
+
+---
 
 # Ошибки
 
@@ -1042,6 +1106,15 @@ func Cause(err error) error {
 	return err
 }
 ```
+---
+
+# Итого: 
+
+- проверяйте ошибки
+- лишний раз не логируйте
+- проверяйте поведение, а не тип
+- ошибки - это значения
+
 ---
 
 
