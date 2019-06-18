@@ -310,6 +310,47 @@ func Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
 
 ---
 
+# Интерфейсы: interface{}
+
+<br>
+
+```
+func PrintAll(vals []interface{}) {
+	for _, val := range vals {
+		fmt.Println(val)
+	}
+}
+func main() {
+	names := []string{"stanley", "david", "oscar"}
+	PrintAll(names)
+}
+```
+
+```
+func PrintAll(vals []interface{}) {
+    for _, val := range vals {
+        fmt.Println(val)
+    }
+}
+func main() {
+    names := []string{"stanley", "david", "oscar"}
+    vals := make([]interface{}, len(names))
+    for i, v := range names { vals[i] = v }
+    PrintAll(vals)
+}
+```
+
+---
+
+# Интерфейсы: интерактив
+
+<br><br>
+https://play.golang.org/p/U1V7tpVl9iI
+
+Реализовать интерфейс Adult
+
+---
+
 # Значение типа интерфейс
 
 <br>состоит из динамического типа и значения
