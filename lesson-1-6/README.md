@@ -282,7 +282,61 @@ type Hound interface {
 
 # Значение типа интерфейс
 
-<br>состоит из статического типа и динамических типа и значения
+<br>состоит из динамического типа и значения
+<br>мы можем их смотреть при помощи %v и %T
+
+```
+type Temp int
+
+func (t Temp) String() string {
+	return strconv.Itoa(int(t)) + " °C"
+}
+
+
+func main() {
+
+	var x fmt.Stringer
+	x = Temp(24)
+	fmt.Printf("%v %T\n", x, x) // 24 °C main.Temp
+}
+```
+
+
+---
+
+# Статический и динамический типы
+<br>
+...или с помощью пакета reflect
+
+```
+
+import (
+	"fmt"
+	"reflect"
+)
+
+type MyError struct {}
+
+func (e MyError) Error() string {
+	return "smth happened"
+}
+
+
+func main() {
+
+	var e error
+	e = MyError{}
+
+	fmt.Println(reflect.TypeOf(e).Name()) // main MyError
+	fmt.Printf("%T\n", e) // // main MyError
+}
+```
+
+---
+
+# Значение типа интерфейс
+
+nil - нулевое значение для интерфейсного типа
 
 ```
 type Shape interface {
@@ -386,37 +440,6 @@ func main() {
 }
 ```
 
----
-
-# Статический и динамический типы
-
-```
-
-import (
-	"fmt"
-	"reflect"
-)
-
-type MyError struct {}
-
-func (e MyError) Error() string {
-	return "smth happened"
-}
-
-
-func main() {
-
-	var e error
-
-	e = MyError{}
-
-	fmt.Println(reflect.TypeOf(e).Name()) // main MyError
-	fmt.Println(reflect.TypeOf(e).String()) // main MyError
-
-	fmt.Printf("%T\n", e) // // main MyError
-}
-```
-
 
 ---
 
@@ -426,25 +449,18 @@ func main() {
 Значение интерфейсного типа равно nil тогда и только тогда, когда nil его статическая и динамическая части.
 
 ```
-type I interface {
-    M()
-}
+type I interface { M() }
 
 type T struct {}
-
 func (T) M() {}
 
 func main() {
     var t *T
-    if t == nil {
-        fmt.Println("t is nil")
-    } else {
+    if t == nil { fmt.Println("t is nil") } else {
         fmt.Println("t is not nil")
     }
     var i I = t
-    if i == nil {
-        fmt.Println("i is nil")
-    } else {
+    if i == nil { fmt.Println("i is nil") } else {
         fmt.Println("i is not nil")
     }
 }
@@ -518,19 +534,11 @@ func main() {
 
 ```
 
-type I1 interface {
-    M1()
-    M2()
-}
+type I1 interface { M1(); M2() }
 
-type I2 interface {
-    M1()
-    I3
-}
+type I2 interface { M1(); I3 }
 
-type I3 interface {
-    M2()
-}
+type I3 interface { M2() }
 
 type T struct{}
 
@@ -550,19 +558,14 @@ func main() {
 
 # Интерфейсы: присваивание
 
-<br> v1 не удовлетворяет I2
+<br> валидно?
 
 ```
 package main
 
-type I1 interface {
-	M1()
-}
+type I1 interface { M1() }
 
-type I2 interface {
-	M1()
-	M2()
-}
+type I2 interface { M1(); M2() }
 
 type T struct{}
 
