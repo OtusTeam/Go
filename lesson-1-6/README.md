@@ -49,23 +49,21 @@ background-size: 130%
 Интерфейс - это набор методов:
 
 ```
-type Dog interface {
-	Bark()
-	Eat()
-	Name() string
-	Weight(pounds bool) float64
+type Shape interface {
+    Area() float64
+    Perimeter() float64
 }
 ```
 
 ---
 
 
-# Определение и реализация
+# Интерфейсы реализуются неявно
 
-Интерфейс - это набор сигнатур методов, которые должен имплементировать объект, чтобы "реализовать интерфейс".
+<br> Dog удовлетворяет интерфейсу Duck
 
 ```
-type Ducker interface {
+type Duck interface {
 	Talk() string
 	Walk()
 	Swim()
@@ -79,12 +77,33 @@ func (d Dog) Talk() string {
 	return "AGGGRRRR"
 }
 
-func (d Dog) Walk() {
+func (d Dog) Walk() { }
+
+func (d Dog) Swim() { }
+
+```
+
+---
+
+# Интерфейсы реализуются неявно
+
+```
+type MyVeryOwnStringer struct { s string}
+
+func (s MyVeryOwnStringer) String() string {
+	return "my string representation of MyVeryOwnStringer"
 }
 
-func (d Dog) Swim() {
-}
 
+func main() {
+	fmt.Println(MyVeryOwnStringer{"hello"}) // my string representation of MyVeryOwnStringer{}
+}
+```
+
+```
+type Stringer interface {
+    String() string
+}
 ```
 
 
@@ -119,34 +138,6 @@ func main() {
 
 ---
 
-# Тип может реализовать несколько интерфейсов:
-
-```
-type Hound interface {
-	Hunt()
-}
-type Poodle interface {
-	Bark()
-}
-
-type GoldenRetriever struct{name string}
-
-func (GoldenRetriever) Hunt() { fmt.Println("hunt") }
-func (GoldenRetriever) Bark() { fmt.Println("bark") }
-
-
-func f1(i Hound) { i.Hunt() }
-func f2(i Poodle) { i.Bark() }
-
-
-func main() {
-	t := GoldenRetriever{"jack"}
-	f1(t) // "hunt"
-	f2(t) // "bark"
-}
-```
-
----
 
 # Одному интерфейсу могут соответствовать много типов
 
@@ -195,7 +186,9 @@ var s Stringer
 
 ---
 
-# Интерфейсы
+# Интерфейсы: композиция
+
+<br>
 
 Интерфейс может встраивать другой интерфейс, определенный пользователеи или импортируемый
 при помощи qualified name
@@ -214,12 +207,32 @@ type Stranger interface {
 }
 ```
 
-напомним:
+---
+
+# Интерфейсы: композиция
+
+Пример из io:
+
 ```
-type Stringer interface {
-	String() string
+// ReadWriter is the interface that groups the basic Read and Write methods.
+type ReadWriter interface {
+	Reader
+	Writer
+}
+
+// ReadCloser is the interface that groups the basic Read and Close methods.
+type ReadCloser interface {
+	Reader
+	Closer
+}
+
+// WriteCloser is the interface that groups the basic Write and Close methods.
+type WriteCloser interface {
+	Writer
+	Closer
 }
 ```
+
 
 ---
 
@@ -267,27 +280,52 @@ type Hound interface {
 
 ---
 
-# Интерфейсы: композиция
+# Значение типа интерфейс
 
-Пример из io:
+<br>состоит из статического типа и динамических типа и значения
 
 ```
-// ReadWriter is the interface that groups the basic Read and Write methods.
-type ReadWriter interface {
-	Reader
-	Writer
+type Shape interface {
+	Area() float64
+	Perimeter() float64
 }
 
-// ReadCloser is the interface that groups the basic Read and Close methods.
-type ReadCloser interface {
-	Reader
-	Closer
+func main() {
+	var s Shape
+	fmt.Println("value of s is", s)
+	fmt.Printf("type of s is %T\n", s)
+}
+```
+
+```
+value of s is <nil>
+type of s is <nil>
+```
+
+---
+
+# Значение типа интерфейс
+<br>
+```
+type Rect struct {
+	width  float64
+	height float64
 }
 
-// WriteCloser is the interface that groups the basic Write and Close methods.
-type WriteCloser interface {
-	Writer
-	Closer
+func (r Rect) Area() float64 {
+	return r.width * r.height
+}
+
+func (r Rect) Perimeter() float64 {
+	return 2 * (r.width + r.height)
+}
+
+func main() {
+	var s Shape
+	s = Rect{5.0, 4.0}
+	fmt.Printf("type of s is %T\n", s) // type of s is main.Rect
+	fmt.Printf("value of s is %v\n", s) // value of s is {5 4}
+	fmt.Println("area of rectange s", s.Area()) // area of rectange s 20
 }
 ```
 
@@ -296,8 +334,6 @@ type WriteCloser interface {
 # Значение типа интерфейс
 
 <br>
-An interface value consists of a concrete value and a dynamic type: [Value, Type]
-
 Переменная типа интерфейс I может принимать значение любого типа,
 который реализует интерфейс I
 
@@ -570,20 +606,72 @@ cannot use v1 (type I1) as type T in assignment: need type assertion
 
 # Интерфейсы: type assertion
 
+
+x.(T) проверяет, что конкретная часть значения x имеет тип T и x != nil
+
+	- если T - не интерфейс, то проверяем, что динамический тип x это T
+	- если T - интерфейс: то проверяем, что динамический тип x его реализует
+
+
+---
+
+# Интерфейсы: type assertion
+
 <br>
-interface type -> concrete type
 
 ```
-type I interface {
-    M()
+	var i interface{} = "hello"
+
+	s := i.(string)
+	fmt.Println(s) // hello
+
+	s, ok := i.(string) // hello true
+	fmt.Println(s, ok)
+
+	r, ok := i.(fmt.Stringer) // <nil> false
+	fmt.Println(r, ok)
+
+	f, ok := i.(float64) // 0 false
+	fmt.Println(f, ok)
+```
+
+---
+
+# Интерфейсы: type assertion
+
+```
+	f, ok := i.(float64) // 0 false
+	fmt.Println(f, ok)
+
+	f = i.(float64) // panic: interface conversion: 
+					// interface {} is string, not float64
+	fmt.Println(f)
+```
+
+---
+
+
+# Интерфейсы: type assertion & type switch
+
+<br>
+что-то такое происходит в пакете fmt:
+
+```
+type Stringer interface {
+    String() string
 }
 
-type T struct {}
-func (T) M() {}
-
-func main() {
-    var v I = T{}
-    fmt.Println(T(v))
+func ToString(any interface{}) string {
+    if v, ok := any.(Stringer); ok {
+        return v.String()
+    }
+    switch v := any.(type) {
+    case int:
+        return strconv.Itoa(v)
+    case float:
+        return strconv.Ftoa(v, 'g', -1)
+    }
+    return "???"
 }
 ```
 
@@ -605,6 +693,31 @@ func (T) M() {}
 func main() {
     var v I = T{}
     fmt.Println(T(v))
+}
+```
+
+```
+cannot convert v(type I) to type T: need type assertion
+```
+
+---
+
+# Интерфейсы: type assertion
+
+<br>
+interface type -> interface type
+
+```
+type I1 interface {
+    M()
+}
+type I2 interface {
+    M()
+    N()
+}
+func main() {
+    var v I1
+    fmt.Println(I2(v))
 }
 ```
 
@@ -635,17 +748,6 @@ func main() {
 
 ```
 cannot convert v (type I) to type T: need type assertion
-```
-
----
-
-# Интерфейсы: type assertion
-
-<br>
-
-
-```
-PrimaryExpression.(Type)
 ```
 
 
@@ -1020,6 +1122,12 @@ ok      strexpand/interfaces/addifier   2.635s
 ---
 
 
+# Интерфейсы: почти дженерики
+
+
+
+
+---
 
 class: white
 background-image: url(img/message.svg)
