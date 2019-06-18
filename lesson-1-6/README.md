@@ -1,4 +1,4 @@
-.center.icon[![otus main](img/main.png)]
+center.icon[![otus main](img/main.png)]
 
 ---
 
@@ -34,11 +34,10 @@ background-size: 130%
 # О чем будем говорить:
 
 * Определение и реализация интерфейсов
-* tВнутренняя структура интерфейсов
+* Внутренняя структура интерфейсов
 * Определение типа значения интерфейса
 * Опасный и безопасный type cast
 * Конструкций switch 
-* Слайсы и словари с интерфейсами
 * Где мои generic-и?
 
 
@@ -1025,21 +1024,14 @@ panic: interface conversion: main.I is nil, not main.T
 можем объединить проверку нескольких типов в один type switch:
 
 ```
-type I1 interface {
-    M1()
-}
+type I1 interface { M1() }
 
 type T1 struct{}
-
 func (T1) M1() {}
 
-type I2 interface {
-    I1
-    M2()
-}
+type I2 interface { I1; M2() }
 
 type T2 struct{}
-
 func (T2) M1() {}
 func (T2) M2() {}
 
