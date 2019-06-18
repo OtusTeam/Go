@@ -88,6 +88,20 @@ func (d Dog) Swim() { }
 # Интерфейсы реализуются неявно
 
 ```
+func quack(d Duck) {
+	print(d.Talk())
+}
+
+func main() {
+	quack(Dog{})
+}
+```
+
+---
+
+# Интерфейсы реализуются неявно
+
+```
 type MyVeryOwnStringer struct { s string}
 
 func (s MyVeryOwnStringer) String() string {
@@ -427,35 +441,6 @@ func main() {
 }
 ```
 
----
-
-# Значение типа интерфейс
-<br>
-Что выведет программа?
-
-```
-package main
-
-import (
-	"io"
-	"log"
-	"os"
-	"strings"
-)
-
-func main() {
-
-	var r io.Reader
-
-	r = strings.NewReader("hello")
-	r = io.LimitReader(r, 4)
-
-	if _, err := io.Copy(os.Stdout, r); err != nil {
-		log.Fatal(err)
-	}
-}
-```
-
 
 ---
 
@@ -486,6 +471,36 @@ func main() {
 t is nil
 i is not nil
 ```
+
+---
+
+# Значение типа интерфейс
+<br>
+Что выведет программа?
+
+```
+package main
+
+import (
+	"io"
+	"log"
+	"os"
+	"strings"
+)
+
+func main() {
+
+	var r io.Reader
+
+	r = strings.NewReader("hello")
+	r = io.LimitReader(r, 4)
+
+	if _, err := io.Copy(os.Stdout, r); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
 
 ---
 
