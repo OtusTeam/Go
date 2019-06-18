@@ -277,6 +277,22 @@ type Hound interface {
 }
 ```
 
+---
+
+# Интерфейс может быть пустым
+
+<br>то есть не содерижать никаких методов:
+
+
+```
+interface{}
+```
+
+```
+func Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
+   ...
+}
+```
 
 ---
 
@@ -823,11 +839,9 @@ type I interface {
 }
 
 type T1 struct{}
-
 func (T1) M() {}
 
 type T2 struct{}
-
 func (T2) M() {}
 
 func main() {
@@ -850,16 +864,12 @@ panic: interface conversion: main.I is main.T1, not main.T2
 multi-valued type assertion:
 
 ```
-type I interface {
-    M()
-}
+type I interface { M() }
 
 type T1 struct{}
-
 func (T1) M() {}
 
 type T2 struct{}
-
 func (T2) M() {}
 
 func main() {
@@ -875,17 +885,12 @@ func main() {
 ---
 
 
-# Интерфейсы: type assertion для и нтерфейсов
+# Интерфейсы: type assertion для интерфейсов
 
 ```
-type I1 interface {
-    M()
-}
+type I1 interface { M() }
 
-type I2 interface {
-    I1
-    N()
-}
+type I2 interface { I1; N() }
 
 type T struct{
     name string
@@ -1023,12 +1028,6 @@ default:
 
 ---
 
-# Пустой интерфейс
-
-Интерфейс может вообще не содежать методов.
-
----
-
 # Интерфейсы изнутри
 
 ```
@@ -1053,6 +1052,15 @@ s.SayHello()
 
 ---
 
+
+background-image: url(img/internalinterfaces.png)
+
+---
+
+background-image: url(img/emptyinterface.png)
+
+---
+
 # Интерфейсы изнутри: iface
 
 ```
@@ -1062,16 +1070,20 @@ type iface struct {
 }
 ```
 
+```
+type itab struct { // 40 bytes on a 64bit arch
+    inter *interfacetype
+    _type *_type
+    hash  uint32 // copy of _type.hash. Used for type switches.
+    _     [4]byte
+    fun   [1]uintptr // variable sized. fun[0]==0 means _type does not implement inter.
+}
+```
+
+https://github.com/teh-cmc/go-internals/blob/master/chapter2_interfaces/README.md
+
 ---
 
-
-background-image: url(img/internalinterfaces.png)
-
----
-
-background-image: url(img/emptyinterface.png)
-
----
 
 # Интерфейсы изнутри: benchmark
 
@@ -1124,11 +1136,58 @@ ok      strexpand/interfaces/addifier   2.635s
 
 ---
 
+# Интерфейсы: почти дженерики
+
+есть: map, slice, etc.
+
+https://go.googlesource.com/proposal/+/master/design/go2draft-generics-overview.md
+
+
+---
 
 # Интерфейсы: почти дженерики
 
 
+Чтобы реализовать общие алгоритмы мы можем воспользоваться интерфейсами:
 
+```
+type Interface interface {
+        // Len is the number of elements in the collection.
+        Len() int
+        // Less reports whether the element with
+        // index i should sort before the element with index j.
+        Less(i, j int) bool
+        // Swap swaps the elements with indexes i and j.
+        Swap(i, j int)
+}
+```
+
+---
+
+# Интерфейсы: почти дженерики
+
+```
+type Person struct {
+    Name string
+    Age  int
+}
+// ByAge implements sort.Interface for []Person based on
+// the Age field.
+type ByAge []Person
+
+func (a ByAge) Len() int           { return len(a) }
+func (a ByAge) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByAge) Less(i, j int) bool { return a[i].Age < a[j].Age }
+...
+people := []Person{
+    {"Bob", 31},
+    {"John", 42},
+    {"Michael", 17},
+    {"Jenny", 26},
+}
+
+sort.Sort(ByAge(people))
+```
 
 ---
 
