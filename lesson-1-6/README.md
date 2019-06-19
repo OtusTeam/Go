@@ -467,14 +467,6 @@ func main() {
 # Значение типа интерфейс
 
 <br>
-реализовать функцию zoo
-https://play.golang.org/p/4zwgnjtDz_L
-
----
-
-# Значение типа интерфейс
-
-<br>
 Переменная типа интерфейс I может принимать значение любого типа,
 который реализует интерфейс I
 
@@ -745,7 +737,66 @@ x.(T) проверяет, что конкретная часть значени�
 	s := 5
 	i := s.(int)
 ```
+```
 Invalid type assertion: s.(int) (non-interface type int on left)
+```
+
+---
+
+
+# Интерфейсы: type switch
+
+<br>
+можем объединить проверку нескольких типов в один type switch:
+
+```
+type I1 interface { M1() }
+
+type T1 struct{}
+func (T1) M1() {}
+
+type I2 interface { I1; M2() }
+
+type T2 struct{}
+func (T2) M1() {}
+func (T2) M2() {}
+
+func main() {
+    var v I1
+    switch v.(type) {
+    case T1:
+            fmt.Println("T1")
+    case T2:
+            fmt.Println("T2")
+    case nil:
+            fmt.Println("nil")
+    default:
+            fmt.Println("default")
+    }
+}
+```
+---
+
+
+# Интерфейсы: type switch
+
+
+как и в обычном switch можем объединять типы:
+
+```
+    case T1, T2:
+            fmt.Println("T1 or T2")
+    }
+```
+
+и обрабатывать default:
+
+```
+var v I
+switch v.(type) {
+default:
+        fmt.Println("fallback")
+}
 ```
 
 ---
@@ -774,6 +825,125 @@ func ToString(any interface{}) string {
     return "???"
 }
 ```
+
+---
+
+# Значение типа интерфейс
+
+<br>
+реализовать функцию zoo
+https://play.golang.org/p/4zwgnjtDz_L
+
+
+---
+
+# Интерфейсы изнутри
+
+```
+type Speaker interface {
+    SayHello()
+}
+
+type Human struct {
+    Greeting string
+}
+
+func (h Human) SayHello() {
+    fmt.Println(h.Greeting)
+}
+...
+var s Speaker
+h := Human{Greeting: "Hello"}
+s := Speaker(h)
+s.SayHello()
+
+```
+
+---
+
+
+background-image: url(img/internalinterfaces.png)
+
+---
+
+background-image: url(img/emptyinterface.png)
+
+---
+
+# Интерфейсы изнутри: iface
+
+```
+type iface struct {
+    tab  *itab
+    data unsafe.Pointer
+}
+```
+
+```
+type itab struct { // 40 bytes on a 64bit arch
+    inter *interfacetype
+    _type *_type
+    hash  uint32 // copy of _type.hash. Used for type switches.
+    _     [4]byte
+    fun   [1]uintptr // variable sized. fun[0]==0 means _type does not implement inter.
+}
+```
+
+https://github.com/teh-cmc/go-internals/blob/master/chapter2_interfaces/README.md
+
+---
+
+
+# Интерфейсы изнутри: benchmark
+
+```
+
+type Addifier interface{ Add(a, b int32) int32 }
+
+type Adder struct{ id int32 }
+
+func (adder Adder) Add(a, b int32) int32 { return a + b }
+
+func BenchmarkDirect(b *testing.B) {
+	adder := Adder{id: 6754}
+	for i := 0; i < b.N; i++ {
+		adder.Add(10, 32)
+	}
+}
+
+func BenchmarkInterface(b *testing.B) {
+	adder := Adder{id: 6754}
+	for i := 0; i < b.N; i++ {
+		Addifier(adder).Add(10, 32)
+	}
+}
+```
+
+---
+
+
+# Интерфейсы изнутри: benchmark
+
+```
+go tool compile -m addifier.go
+
+Addifier(adder) escapes to heap
+```
+
+
+```
+➜  addifier go test -bench=.              
+goos: darwin
+goarch: amd64
+pkg: strexpand/interfaces/addifier
+BenchmarkDirect-8       2000000000               0.60 ns/op
+BenchmarkInterface-8    100000000               13.4 ns/op
+PASS
+ok      strexpand/interfaces/addifier   2.635s
+```
+
+
+
 
 ---
 
@@ -885,11 +1055,6 @@ func main() {
 для интерфейсов:
 
 ```
-package main
-
-import (
-	"fmt"
-)
 
 type I interface {
 	M()
@@ -903,7 +1068,8 @@ type T2 struct{}
 
 func main() {
 	var v1 I = T1{}
-	v2 := v1.(T2) // impossible type assertion: T2 does not implement I (missing M method)
+	v2 := v1.(T2) // impossible type assertion: 
+				  // T2 does not implement I (missing M method)
 	fmt.Printf("%T\n", v2)
 }
 ```
@@ -1040,173 +1206,6 @@ func main() {
 ```
 panic: interface conversion: main.I is nil, not main.T
 ```
-
----
-
-
-# Интерфейсы: type switch
-
-<br>
-можем объединить проверку нескольких типов в один type switch:
-
-```
-type I1 interface { M1() }
-
-type T1 struct{}
-func (T1) M1() {}
-
-type I2 interface { I1; M2() }
-
-type T2 struct{}
-func (T2) M1() {}
-func (T2) M2() {}
-
-func main() {
-    var v I1
-    switch v.(type) {
-    case T1:
-            fmt.Println("T1")
-    case T2:
-            fmt.Println("T2")
-    case nil:
-            fmt.Println("nil")
-    default:
-            fmt.Println("default")
-    }
-}
-```
----
-
-
-# Интерфейсы: type switch
-
-
-как и в обычном switch можем объединять типы:
-
-```
-    case T1, T2:
-            fmt.Println("T1 or T2")
-    }
-```
-
-и обрабатывать default:
-
-```
-var v I
-switch v.(type) {
-default:
-        fmt.Println("fallback")
-}
-```
-
-
----
-
-# Интерфейсы изнутри
-
-```
-type Speaker interface {
-    SayHello()
-}
-
-type Human struct {
-    Greeting string
-}
-
-func (h Human) SayHello() {
-    fmt.Println(h.Greeting)
-}
-...
-var s Speaker
-h := Human{Greeting: "Hello"}
-s := Speaker(h)
-s.SayHello()
-
-```
-
----
-
-
-background-image: url(img/internalinterfaces.png)
-
----
-
-background-image: url(img/emptyinterface.png)
-
----
-
-# Интерфейсы изнутри: iface
-
-```
-type iface struct {
-    tab  *itab
-    data unsafe.Pointer
-}
-```
-
-```
-type itab struct { // 40 bytes on a 64bit arch
-    inter *interfacetype
-    _type *_type
-    hash  uint32 // copy of _type.hash. Used for type switches.
-    _     [4]byte
-    fun   [1]uintptr // variable sized. fun[0]==0 means _type does not implement inter.
-}
-```
-
-https://github.com/teh-cmc/go-internals/blob/master/chapter2_interfaces/README.md
-
----
-
-
-# Интерфейсы изнутри: benchmark
-
-```
-
-type Addifier interface{ Add(a, b int32) int32 }
-
-type Adder struct{ id int32 }
-
-func (adder Adder) Add(a, b int32) int32 { return a + b }
-
-func BenchmarkDirect(b *testing.B) {
-	adder := Adder{id: 6754}
-	for i := 0; i < b.N; i++ {
-		adder.Add(10, 32)
-	}
-}
-
-func BenchmarkInterface(b *testing.B) {
-	adder := Adder{id: 6754}
-	for i := 0; i < b.N; i++ {
-		Addifier(adder).Add(10, 32)
-	}
-}
-```
-
----
-
-
-# Интерфейсы изнутри: benchmark
-
-```
-go tool compile -m addifier.go
-
-Addifier(adder) escapes to heap
-```
-
-
-```
-➜  addifier go test -bench=.              
-goos: darwin
-goarch: amd64
-pkg: strexpand/interfaces/addifier
-BenchmarkDirect-8       2000000000               0.60 ns/op
-BenchmarkInterface-8    100000000               13.4 ns/op
-PASS
-ok      strexpand/interfaces/addifier   2.635s
-```
-
 
 ---
 
