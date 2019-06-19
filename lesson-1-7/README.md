@@ -351,7 +351,7 @@ TODO
 .left-text[
 Проверим что мы узнали за этот урок
 <br><br>
-[https://forms.gle/xLLab1NXH9NLKJij8](https://forms.gle/xLLab1NXH9NLKJij8)
+[]()
 ]
 
 .right-image[
