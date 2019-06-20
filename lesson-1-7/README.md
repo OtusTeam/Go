@@ -221,28 +221,6 @@ Best practise: *Закрывать канал должна пишущая гор
 
 ---
 
-# Отправка сигналов
-
-Закрытие канала - один из способов "послать сигнал" горутине.
-
-```
-var start = make(chan struct{}) // "барьер"
-
-for i := 0; i < 10000; i++ {
-
-  go func() {
-    <- start
-    // горутины не начнут работу
-    // пока не будут созданы все 10000
-  }()
-
-}
-
-close(start)
-```
-
----
-
 # Каналы на чтение и на запись
 
 В Go есть возможность уточнить способ использования (чтение/запись) канала, указав это при объявлении типа.
@@ -309,42 +287,230 @@ fmt.Println(cap(buffered)) // 10
 
 ---
 
-# Небуферизованные каналы
-
----
-
 # Конструкция select
 
-Конструкция `select` в Go позволяет одновременно читать/писать в несколько каналов.
+Конструкция `select` в Go позволяет одновременно читать(писать) из нескольких каналов.
 
 ```
+var stop <-chan struct{}
+var out1 chan<- interface{}
+var out2 chan<- interface{}
+// ^^ каналы должны быть инициализированы ^^
 
+select {
+  case out1 <- value1:
+    fmt.Println("succeded to send to out1")
+  case out2 <- value2:
+    fmt.Println("succeded to send to out1")
+  case <- stop:
+    fmt.Printf("manually stopped")
+}
 ```
+
+`select` пытается записать(получить) данные в доступный канал, т.е. тот в котором есть место в буфере или ожидающая горутина. Если ни одна операция не возможна на данный момент, `select` блокирует выполнение текущей горутины.
+
 
 ---
 
 # select default
 
-# Паттерны использования каналов
-- завершение горутины
-- передача задач (параллелизация)
-- получение ответов
-- каналы каналов
-- семафоры (?)
-- Не выводить каналы в публичный интерфейс
-- leaky bucket
-    
-# Таймеры и работа со временем
+В конструкцию `select` можно добавить секцию `default`, которая будет выполнена если ни один одна
+из операций с каналами не может быть совершена в данный момент.
 
-# Внутренняя структура канала
+```
 
-# Работа планировщика Go
-TODO
-- когда происходит переключение 
-- что происходит при обращении к сети и каналу
-- что происходит при записи на диск и системном вызове
+select {
+  case out1 <- value1:
+    fmt.Println("succeded to send to out1")
+  case out2 <- value2:
+    fmt.Println("succeded to send to out1")
+  case <- stop:
+    fmt.Printf("manually stopped")
+  default:
+    fmt.Printf("nothing happens")
+    time.Sleep(10*time.Millisecond)
+}
+```
+---
+
+# Патерны: отправка сигналов
+
+Закрытие канала - один из способов "послать сигнал" горутине.
+
+```
+var start = make(chan struct{}) // "барьер"
+
+for i := 0; i < 10000; i++ {
+
+  go func() {
+    <- start
+    // горутины не начнут работу
+    // пока не будут созданы все 10000
+  }()
+
+}
+
+close(start)
+```
+
+Часто закрытие канала используют как сигнал на выход из горутины или остановку чего-либо.
 
 ---
+
+# Патерны: функция-генератор
+
+Генератор - функция, возвращающая последовательность значений. В Go - это функция возвращающая канал.
+
+```
+func ReadDir(dir string) <-chan string {
+  c := make(chan string, 5)
+  go func() {
+    f, err := os.Open(dir)
+    if err != nil {
+      close(c)
+    }
+    names, err := f.Readdirnames(-1)
+    if err != nil {
+      close(c)
+    }
+    for _, n := range names {
+      c <- n
+    }
+  }()
+  return c
+}
+```
+
+---
+
+# Патерны: таймауты и повторы
+
+`time.Timer` - позволяет получить "уведомление" через указанное время
+
+```
+timer := time.NewTimer(10*time.Second)
+select {
+  case data <- in:
+    fmt.Printf("received: %s", data)
+  case <- timer.C:
+    fmt.Printf("failed to receive in 10s")
+}
+```
+
+`time.Ticker` - позволяет получать "периодические уведомления"
+
+```
+ticker := time.NewTicker(10*time.Second)
+OUT:
+for {
+  select {
+    case <- ticker.C:
+      fmt.Println("do some job")
+    case <- stop:
+      break OUT
+  }
+}
+```
+---
+
+
+# Патерны: мультиплексирование
+
+В Go можно слить два однотипных канала в один
+
+```
+func Merge(in1, in2 <-chan interface{}) <-chan interface{} {
+  ret := make(chan interface{})
+  for {
+    select {
+    case v := <- in1:
+      ret <- v
+    case v := <- in2:
+      ret <- v
+    }
+  }
+  return ret
+}
+```
+
+Полная версия [https://play.golang.org/p/JHVD4Sz9Px1](https://play.golang.org/p/JHVD4Sz9Px1)
+
+---
+
+# Работа планировщика Go
+
+.full-image[
+![img/sched.png](img/sched.png)
+]
+
+[https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part1.html](https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part1.html)
+[https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html](https://www.ardanlabs.com/blog/2018/08/scheduling-in-go-part2.html)
+
+---
+
+# Факты о планировщике
+
+
+* В Go не-вытесняющий планировщик (пока, но скоро будет наоброт)
+* Передача управления планировщику при:
+  * Системном вызове
+  * Создании новой горутины `go`
+  * Работа с каналами / mutext и другой синхронизацией
+  * Garbage Collection
+  * Вызове `runtime.Gosched`
+* Длинные циклы и вычисления не могут быть прерваны (пока), это может приводить к зависанию
+* С помощью `runtime.GOMAXPROCS` можно доступное Go число ядер процессора.
+
+---
+
+# Асинхронные системные вызовы (1)
+
+.full-image[
+![img/async1.png](img/async1.png)
+]
+
+---
+
+# Асинхронные системные вызовы (2)
+
+.full-image[
+![img/async2.png](img/async2.png)
+]
+
+---
+
+# Асинхронные системные вызовы (3)
+
+.full-image[
+![img/async3.png](img/async3.png)
+]
+
+---
+
+# Cинхронные системные вызовы (1)
+
+.full-image[
+![img/sync1.png](img/sync1.png)
+]
+
+---
+
+# Cинхронные системные вызовы (2)
+
+.full-image[
+![img/sync2.png](img/sync2.png)
+]
+
+---
+
+# Cинхронные системные вызовы (3)
+
+.full-image[
+![img/sync3.png](img/sync3.png)
+]
+
+---
+
 
 # Небольшой тест
 
