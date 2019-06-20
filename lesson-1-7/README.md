@@ -368,14 +368,17 @@ func ReadDir(dir string) <-chan string {
     f, err := os.Open(dir)
     if err != nil {
       close(c)
+      return
     }
     names, err := f.Readdirnames(-1)
     if err != nil {
       close(c)
+      return
     }
     for _, n := range names {
       c <- n
     }
+    close(c)
   }()
   return c
 }
@@ -421,14 +424,16 @@ for {
 ```
 func Merge(in1, in2 <-chan interface{}) <-chan interface{} {
   ret := make(chan interface{})
-  for {
-    select {
-    case v := <- in1:
-      ret <- v
-    case v := <- in2:
-      ret <- v
+  go func() {
+    for {
+      select {
+      case v := <- in1:
+        ret <- v
+      case v := <- in2:
+        ret <- v
+      }
     }
-  }
+  }()
   return ret
 }
 ```
