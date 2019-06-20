@@ -7,7 +7,7 @@ class: white
 background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
-# Go-рутины и каналы
+# Горутины и каналы
 
 ### Дмитрий Смаль
 
@@ -36,9 +36,9 @@ background-size: 130%
 .left-text[
 Пожалуйста, пройдите небольшой тест. 
 <br><br>
-Возможно вы уже многое знаете про Go-рутины и каналы в Go =)
+Возможно вы уже многое знаете про горутины и каналы в Go =)
 <br><br>
-[]()
+[https://forms.gle/qpB9Z5jDtHcMEQcD6](https://forms.gle/qpB9Z5jDtHcMEQcD6)
 ]
 
 .right-image[
@@ -517,7 +517,7 @@ func Merge(in1, in2 <-chan interface{}) <-chan interface{} {
 .left-text[
 Проверим что мы узнали за этот урок
 <br><br>
-[]()
+[https://forms.gle/qpB9Z5jDtHcMEQcD6](https://forms.gle/qpB9Z5jDtHcMEQcD6)
 ]
 
 .right-image[
@@ -528,6 +528,23 @@ func Merge(in1, in2 <-chan interface{}) <-chan interface{} {
 
 # Домашнее задание
 
+*Это ДЗ опционально, его не нужно сдавать через ЛК* <br><br>
+
+Написать функцию, объединяющую два канала в один.<br>
+Сигнатура функция такая:
+
+```
+func MergeChans(in1, in2  <-chan interface{}) <-chan interface{}
+```
+
+О чем подумать:
+* Что делать когда исходный канал закрывают ? 
+* А что делать когда закрывают второй ?
+
+<br><br>
+Выступление Роба Пайка: [https://www.youtube.com/watch?v=f6kdp27TYZs](https://www.youtube.com/watch?v=f6kdp27TYZs)
+
+
 ---
 
 # Опрос
@@ -535,7 +552,7 @@ func Merge(in1, in2 <-chan interface{}) <-chan interface{} {
 .left-text[
 Заполните пожалуйста опрос
 <br><br>
-[]()
+[https://otus.ru/polls/3715/](https://otus.ru/polls/3715/)
 ]
 
 .right-image[
@@ -549,6 +566,3 @@ background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
 # Спасибо за внимание!
-
-
----
