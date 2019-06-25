@@ -200,6 +200,8 @@ https://play.golang.org/p/MQNepChxiEa
 
 # sync.Mutex
 
+Если мы увеличим число процессоров, i будет < 1000:
+
 ```
 ➜  GOMAXPROCS=4 go run main.go
 value of i after 1000 operations is 995
@@ -220,30 +222,22 @@ runtime.GOMAXPROCS(2)
 # sync.Mutex
 
 ```
-hello10 go run -race grtn.go
+hello10 go run -race main.go
 ==================
 WARNING: DATA RACE
 Read at 0x00000121e868 by goroutine 7:
   main.worker()
-      /Users/alexander.davydov/h
 ```
 
 
 ---
 
-# Mutex
+# What could possibly go wrong?
+<br>
+.full-image[
+![img/race.png](img/race.png)
+]
 
-Что могло пойти не так?
-<br><br>
-i = i + 1:
-
-- достать значение i
-- инкрементировать
-- записать новое значение
-
-G1 starts first when i is 0, run first 2 steps and i is now 1. But before G1 updates value of i in step 3, new goroutine G2 is scheduled and it runs all steps. But in case of G2, value of i is still 0 hence after it executes step 3, i will be 1. Now G1 is again scheduled to finish step 3 and updates value of i which is 1from step 2. In a perfect world where goroutines are scheduled after completing all 3 steps, successful operations of 2 goroutines would have produced the value of i to be 2 but that’s not the case here. Hence, we can pretty much speculate why our program did not yield value of i to be 1000.
-
-So far we learned that goroutines are cooperatively scheduled. Until unless a goroutine blocks with one of the conditions mentioned in concurrency lesson, another goroutine won’t take its place. And since i = i + 1 is not blocking, why Go scheduler schedules another goroutine?
 
 ---
 
@@ -500,14 +494,7 @@ func (c *Counters) Load(key string) (int, bool) {
 
 ---
 
-# Cache contention
-
-
-
-
----
-
-# sync.Map
+# sync.RWMutex
 
 RWMutex - стандартное решение для map
 
@@ -525,6 +512,19 @@ func (c *Counters) Load(key string) (int, bool) {
 }
 ```
 
+---
+
+# Cache contention
+
+
+.full-image[
+![img/cachecontention.png](img/cachecontention.png)
+]
+
+При блокировке на чтение каждое ядро обновляет счетчик.
+Следующие ядра - вычитывают значение из кэша предыдущего.
+
+
 
 ---
 
@@ -534,6 +534,52 @@ func (c *Counters) Load(key string) (int, bool) {
  вы можете захотеть использовать sync.Map вместо стандартного map+sync.RWMutex. 
 В остальных случаях, sync.Map особо не нужен.
 
+https://www.youtube.com/watch?v=C1EtfDnsdDs
+
+---
+
+# sync.Map
+
+Map реализует "из коробки" API для работы с map+RWMutex:
+
+```
+type Map struct {
+        // contains filtered or unexported fields
+}
+
+func (m *Map) Delete(key interface{})
+func (m *Map) Load(key interface{}) (value interface{}, ok bool)
+func (m *Map) LoadOrStore(key, value interface{}) (actual interface{}, loaded bool)
+func (m *Map) Range(f func(key, value interface{}) bool)
+func (m *Map) Store(key, value interface{})
+```
+
+API обусловлен паттернами использования в стандартной библиотеке.
+
+---
+
+# sync.Map
+
+```
+var counters sync.Map
+
+counters.Store("habr", 42)
+
+v, ok := counters.Load("otus")
+if ok {
+   val = v.(int)
+}
+
+
+counters.Range(func(k, v interface{}) bool {
+	fmt.Println("key:", k, ", val:", v)
+	return true // if false, Range stops
+})
+
+counters.Delete("otus")
+```
+
+https://play.golang.org/p/q1DrtemZv_U
 
 ---
 
