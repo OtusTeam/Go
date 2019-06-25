@@ -7,7 +7,7 @@ class: white
 background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
-# Интерфейсы <br> в Go
+# Примитивы синхронизации <br> в Go
 
 ### Александр Давыдов
 
@@ -42,7 +42,7 @@ background-size: 130%
 
 ---
 
-# WaitGroup
+# sync.WaitGroup
 
 Что выведет эта программа?
 
@@ -70,7 +70,9 @@ func main() {
 
 ---
 
-# Waitgroup
+# sync.WaitGroup
+
+WaitGroup - механизм для ожидания завершения работы нескольких горутин.
 
 ```
 type WaitGroup struct {
@@ -87,7 +89,7 @@ func (wg *WaitGroup) Wait() - блокируется, пока счетчик Wa
 ---
 
 
-# Waitgroup
+# sync.WaitGroup
 
 ```
 type Dog struct { name string; walkDuration time.Duration }
@@ -116,11 +118,10 @@ func main() {
 
 ---
 
-# Waitgroup
+# sync.WaitGroup
 
 ```
 type httpPkg struct{}
-
 func (httpPkg) Get(url string) {}
 
 var http httpPkg
@@ -143,19 +144,9 @@ func main() {
 }
 ```
 
-
 ---
 
-# Задачка
-
-https://play.golang.org/p/m16jnq3kO2O
-
-использовать WaitGroup чтобы выпустить собак одновременно
-и дождаться их возвращения
-
----
-
-# Waitgroup
+# sync.WaitGroup
 
 fun fact: аргумент Add может быть отрицательным
 
@@ -169,7 +160,17 @@ func (wg *WaitGroup) Done() {
 
 ---
 
-# Mutex
+# Задачка
+
+https://play.golang.org/p/m16jnq3kO2O
+
+использовать WaitGroup чтобы выпустить собак одновременно
+и дождаться их возвращения
+
+
+---
+
+# sync.Mutex
 
 ```
 var i int // i == 0
@@ -197,16 +198,16 @@ https://play.golang.org/p/MQNepChxiEa
 
 ---
 
-# Mutex
+# sync.Mutex
 
 ```
-➜  hello10 GOMAXPROCS=4 go run main.go
+➜  GOMAXPROCS=4 go run main.go
 value of i after 1000 operations is 995
-➜  hello10 GOMAXPROCS=4 go run main.go 
+➜  GOMAXPROCS=4 go run main.go 
 value of i after 1000 operations is 999
-➜  hello10 GOMAXPROCS=4 go run main.go
+➜  GOMAXPROCS=4 go run main.go
 value of i after 1000 operations is 992
-➜  hello10 GOMAXPROCS=2 go run main.go
+➜  GOMAXPROCS=2 go run main.go
 value of i after 1000 operations is 994
 ```
 
@@ -216,7 +217,7 @@ runtime.GOMAXPROCS(2)
 
 ---
 
-# Mutex
+# sync.Mutex
 
 ```
 hello10 go run -race grtn.go
@@ -243,6 +244,42 @@ i = i + 1:
 G1 starts first when i is 0, run first 2 steps and i is now 1. But before G1 updates value of i in step 3, new goroutine G2 is scheduled and it runs all steps. But in case of G2, value of i is still 0 hence after it executes step 3, i will be 1. Now G1 is again scheduled to finish step 3 and updates value of i which is 1from step 2. In a perfect world where goroutines are scheduled after completing all 3 steps, successful operations of 2 goroutines would have produced the value of i to be 2 but that’s not the case here. Hence, we can pretty much speculate why our program did not yield value of i to be 1000.
 
 So far we learned that goroutines are cooperatively scheduled. Until unless a goroutine blocks with one of the conditions mentioned in concurrency lesson, another goroutine won’t take its place. And since i = i + 1 is not blocking, why Go scheduler schedules another goroutine?
+
+---
+
+# sync.Mutex
+
+Мью́текс (англ. mutex, от mutual exclusion — «взаимное исключение») — механизм для синхронизации одновременно выполняющихся потоков. 
+
+```
+type Mutex struct {
+	state int32
+	sema  uint32
+}
+
+// A Locker represents an object that can be locked and unlocked.
+type Locker interface {
+	Lock()
+	Unlock()
+}
+```
+
+---
+
+# sync.Mutex
+
+
+Код между Lock() и Unlock() может исполняться только одной горутиной.
+
+```
+mutex.Lock()  
+i = i + 1  
+mutex.Unlock()
+```
+
+Если какая-то горутина владеет мьютексом, то новая горутина должна дождаться
+освобождения мьютекса этой горутиной.
+
 
 ---
 
@@ -351,6 +388,175 @@ func doSomething(){
 
 ---
 
+# sync.Mutex
+
+Когда использовать каналы: 
+- передача данныx
+- распределение вычислений
+- передача асинхронных результатов.
+
+Когда использовать мьютексы: 
+- кэши
+- состояния
+
+---
+
+# sync.RWMutex
+
+как быть?
+
+```
+var wg sync.WaitGroup
+m :=  make(map[string]int)
+
+for x := 0; x < 12; x++ {
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		defer wg.Done()
+			m["hello"] = 1
+	}(&wg)
+}
+wg.Wait()
+```
+
+```
+fatal error: concurrent map writes
+```
+
+https://play.golang.org/p/SaExRk_Zw6S
+
+---
+
+# sync.RWMutex
+
+попробуем мьютекс:
+
+```
+type Counters struct {
+    mx sync.Mutex
+    m map[string]int
+}
+
+func (c *Counters) Load(key string) (int, bool) {
+    c.mx.Lock()
+    defer c.mx.Unlock()
+    val, ok := c.m[key]
+    return val, ok
+}
+
+func (c *Counters) Store(key string, value int) {
+    c.mx.Lock()
+    defer c.mx.Unlock()
+    c.m[key] = value
+}
+```
+
+---
+
+# sync.RWMutex
+
+
+- defer имеет небольшой оверхед (порядка 50-100 наносекунд), поэтому если у вас код для высоконагруженной системы и 100 наносекунд имеют значение, то вам может быть выгодней не использовать defer
+- методы Get() и Store() должны быть определены для указателя на Counters, а не на Counters (тоесть не func (c Counters) Load(key string) int { ... }, потому что в таком случае значение ресивера (c) копируется, вместе с чем скопируется и мьютекс в нашей структуре, что лишает всю затею смысла и приводит к проблемам.
+
+---
+
+# sync.RWMutex
+
+Паттерн доступа к данным часто неравномерный, например мы редко пишем и много читаем.
+В таком случае, блокировать чтение не стоит.
+
+```
+type RWMutex struct {
+        // contains filtered or unexported fields
+}
+```
+
+```
+func (rw *RWMutex) RLock() // блокирует на чтение:
+						   // другие горутины могут читать, но не могут писать
+func (rw *RWMutex) RUnLock()
+```
+
+---
+
+# sync.RWMutex
+
+RWMutex - стандартное решение для map:
+
+```
+type Counters struct {
+    mx sync.RWMutex
+    m  map[string]int
+}
+...
+func (c *Counters) Load(key string) (int, bool) {
+    c.mx.RLock()
+    defer c.mx.RUnlock()
+    val, ok := c.m[key]
+    return val, ok
+}
+```
+
+---
+
+# Cache contention
+
+
+
+
+---
+
+# sync.Map
+
+RWMutex - стандартное решение для map
+
+```
+type Counters struct {
+    mx sync.RWMutex
+    m  map[string]int
+}
+...
+func (c *Counters) Load(key string) (int, bool) {
+    c.mx.RLock()
+    defer c.mx.RUnlock()
+    val, ok := c.m[key]
+    return val, ok
+}
+```
+
+
+---
+
+# sync.Map решает конкретную проблему
+
+Если у вас высоконагруженная (и 100нс решают) система с большим количеством ядер процессора (32+),
+ вы можете захотеть использовать sync.Map вместо стандартного map+sync.RWMutex. 
+В остальных случаях, sync.Map особо не нужен.
+
+
+---
+
+# sync.Pool
+
+Pool - хранилище временных объектов, безопасное для использования несколькими горутинами.
+
+```
+type Pool struct {
+		// New - функция, которая возвращает значение, если Get() 
+		// возвращает nil
+        New func() interface{}
+        // contains filtered or unexported fields
+}
+
+func (p *Pool) Get() interface{}
+
+
+func (p *Pool) Put(x interface{})
+```
+
+---
+
 # sync.Pool
 
 ```
@@ -369,6 +575,7 @@ func main() {
 	dogPack.Put(dog)
 }
 ```
+
 
 ---
 
@@ -534,6 +741,7 @@ bye!
 
 # sync.Once
 
+```
 package main
 
 import (
@@ -557,6 +765,231 @@ func main() {
 		<-done
 	}
 }
+```
+
+---
+
+# sync.Cond
+
+Cond(itional variable) - механизм для ожидания горутинами сигнала о событии
+
+```
+type Cond struct {
+        L Locker
+        // contains filtered or unexported fields
+}
+```
+
+```
+func NewCond(l Locker) *Cond
+
+func (c *Cond) Broadcast() // будит все горутины, которые ждут c
+
+func (c *Cond) Signal() // будит все одну горутину, которая ждет c, если такая есть
+
+func (c *Cond) Wait() // разблокирует c.L, ждет сигнала и снова блокирует c.L
+```
+
+---
+
+# sync.Cond
+
+```
+type Dog struct{ name string }
+
+func (d *Dog) Eat(food *DogFood) {
+	food.Lock()
+	food.cond.Wait()
+	food.food--
+	food.Unlock()
+}
+
+type DogFood struct {
+	sync.Mutex
+	food int
+
+	cond *sync.Cond
+}
+
+func NewDogFood(food int) *DogFood {
+	r := DogFood{food: food}
+	r.cond = sync.NewCond(&r)
+	return &r
+}
+```
+
+---
+
+# sync.Cond
+
+```
+func main() {
+	var wg sync.WaitGroup
+
+	food := NewDogFood(4)
+
+	for _, d := range []Dog{{name: "Vasya"}, {name: "Bob"}, {name: "Henry"}, {name: "Jane"}} {
+		wg.Add(1)
+		go func(d Dog) {
+			defer wg.Done()
+			d.Eat(food)
+		}(d)
+	}
+
+	println("Waiting for food to arrive...\n")
+	time.Sleep(1 * time.Second)
+
+	food.cond.Broadcast()
+
+	wg.Wait()
+	fmt.Printf("Food left: %d\n", food.food)
+}
+```
+
+---
+
+# Модель памяти Go
+
+
+Если чтобы понять вашу программу, надо изучить этот документ, вы слишком умничаете.
+На умничайте.
+
+https://golang.org/ref/mem
+
+---
+
+# Модель памяти Go: инициализация
+
+- Инициализация программы происходит в единственной горутине, которая может создавать другие горутины.
+
+- Если пакет p импортирует q, функции инициализации q произойдут до инициализации p.
+
+- Старт функции main.main происходит по завершении всех функций инициализации (init).
+
+
+---
+
+# Модель памяти Go: создание горутин
+
+
+"go" происходит до начала выполнения горутины. 
+
+```
+var a string
+
+func f() {
+	print(a)
+}
+
+func hello() {
+	a = "hello, world"
+	go f()
+}
+```
+
+"hello, world" будет напечатан когда-то в будущем, возможно, после выхода из hello()
+
+---
+
+# Модель памяти Go: выход из горутины
+
+
+Выход из горутины не гарантирован для выполнения до какого-либо события.
+
+```
+var a string
+
+func hello() {
+	go func() { a = "hello" }()
+	print(a)
+}
+```
+
+В этом случае (нет момента синхронизации) компилятор может вообще удалить горутину.
+
+---
+
+# Модель памяти Go: каналы
+
+
+Каналы - основное средство синхронизации горутин.
+
+Отправка в канал происходит до завершения соответствующего чтения из канала.
+
+```
+var c = make(chan int, 10)
+var a string
+
+func f() {
+	a = "hello, world"
+	c <- 0
+}
+
+func main() {
+	go f()
+	<-c
+	print(a)
+}
+```
+
+гарантированно вываедет "hello, world"
+
+Закрытие канала происходит до получения нулевого значения (потому что канал закрыт).
+В этом примере можно заменить c <- 0 на close(c).
+
+---
+
+# Модель памяти Go: Locks
+
+or any sync.Mutex or sync.RWMutex variable l and n < m, call n of l.Unlock() happens before call m of l.Lock() returns. 
+Для любой переменной l типа sync.Mutex / sync.RWMutex и n < m  n-й вызов l.Unlock() произойдет до вызова m l.Lock(): 
+
+```
+var l sync.Mutex
+var a string
+
+func f() {
+	a = "hello, world"
+	l.Unlock()
+}
+
+func main() {
+	l.Lock()
+	go f()
+	l.Lock()
+	print(a)
+}
+```
+
+гарантированно выведет "hello, world"
+
+
+---
+
+# Модель памяти Go: Once
+
+A single call of f() from once.Do(f) happens (returns) before any call of once.Do(f) returns.
+Одиночный вызов f() из Once.Do(f) происходит до 
+
+```
+var a string
+var once sync.Once
+
+func setup() {
+	a = "hello, world"
+}
+
+func doprint() {
+	once.Do(setup)
+	print(a)
+}
+
+func twoprint() {
+	go doprint()
+	go doprint()
+}
+```
+
 
 ---
 
