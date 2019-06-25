@@ -887,6 +887,66 @@ func main() {
 
 ---
 
+# Race detector
+
+data races - одна из самых сложных для девага ошибок
+
+```
+func main() {
+	c := make(chan bool)
+	m := make(map[string]string)
+	go func() {
+		m["1"] = "a" // First conflicting access.
+		c <- true
+	}()
+	m["2"] = "b" // Second conflicting access.
+	<-c
+	for k, v := range m {
+		fmt.Println(k, v)
+	}
+}
+```
+
+---
+
+
+# Race detector
+
+к счастью, в го есть race detector
+
+
+```
+$ go test -race mypkg    // to test the package
+$ go run -race mysrc.go  // to run the source file
+$ go build -race mycmd   // to build the command
+$ go install -race mypkg // to install the package
+```
+
+
+---
+
+# Race detector
+
+Можно складывать результаты отдельно
+```
+ GORACE="log_path=/tmp/race/report strip_path_prefix=/my/go/sources/" go test -race
+```
+
+Можно исключать тесты:
+
+```
+// +build !race
+
+package foo
+
+// The test contains a data race. See issue 123.
+func TestFoo(t *testing.T) {
+	// ...
+}
+```
+
+---
+
 # Модель памяти Go
 
 
@@ -929,6 +989,14 @@ func hello() {
 "hello, world" будет напечатан когда-то в будущем, возможно, после выхода из hello()
 
 ---
+
+# Модель памяти Go
+
+If event e1 happens before event e2, then we say that e2 happens after e1. Also, if e1 does not happen before e2 and does not happen after e2, then we say that e1 and e2 happen concurrently.
+Если событие e1 происходит до события e2, мы говорим, что e2 происходит после e1
+Если событие e1 не происходит до е2 и не происходит после е2, 
+мы говорим, что они происходят одновременно (concurrently).
+
 
 # Модель памяти Go: выход из горутины
 
@@ -973,14 +1041,11 @@ func main() {
 
 гарантированно вываедет "hello, world"
 
-Закрытие канала происходит до получения нулевого значения (потому что канал закрыт).
-В этом примере можно заменить c <- 0 на close(c).
 
 ---
 
 # Модель памяти Go: Locks
 
-or any sync.Mutex or sync.RWMutex variable l and n < m, call n of l.Unlock() happens before call m of l.Lock() returns. 
 Для любой переменной l типа sync.Mutex / sync.RWMutex и n < m  n-й вызов l.Unlock() произойдет до вызова m l.Lock(): 
 
 ```
@@ -1008,7 +1073,7 @@ func main() {
 # Модель памяти Go: Once
 
 A single call of f() from once.Do(f) happens (returns) before any call of once.Do(f) returns.
-Одиночный вызов f() из Once.Do(f) происходит до 
+Первый вызов f() из Once.Do(f) происходит до возврата любого вызова once.Do(f)
 
 ```
 var a string
