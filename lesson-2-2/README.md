@@ -109,7 +109,7 @@ file, _ := os.Open(path) // открываем файл
 offset := 0
 
 for offset < N {
-  read, err := file.Read(buffer[offset:])
+  read, err := file.Read(buf[offset:])
   offset += read
   if err == io.EOF {
     // что если не дочитали ?
@@ -178,7 +178,7 @@ b := make([]byte, 1024*1024) // заполнен нулями
 
 file, _ := os.Create(path)
 
-wrote, err := file.Write(b[offset:])
+written, err := file.Write(b)
 if err != nil {
   log.Panicf("failed to write: %v", err)
 }
@@ -287,7 +287,7 @@ type WriterAt interface {
 written, err := io.Copy(dst, src)
 
 // копирует N байт или до io.EOF
-written, err := io.Copy(dst, src, 42)
+written, err := io.CopyN(dst, src, 42)
 
 // копирует все вплоть до io.EOF, но использует заданный буфер
 buffer := make([]byte, 1024*1024)
@@ -429,7 +429,7 @@ bytes.Buffer  // реализует io.Reader, io.Writer, io.ByteReader, io.Byte
 import "bytes"
 import "archive/zip"
 
-var buf bytes.Buffer
+buf := bytes.NewBuffer([]byte{})
 zipper := zip.NewWriter(buf)
 _, err := zipper.Write(data)
 
@@ -582,7 +582,7 @@ var input string
 var offset int
 
 func init() {
-	flag.StringVar(&flagvar, "input", "", "file to read from")
+  flag.StringVar(&input, "input", "", "file to read from")
   flag.IntVar(&offset, "offset", 0, "offset in input file")
 }
 
