@@ -8,8 +8,8 @@ import (
 type Person struct {
 	Name        string
 	Surname     string
-	Age         uint8
-	ChildrenAge map[string]uint8
+	Age         uint32
+	ChildrenAge map[string]uint32
 }
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 		Surname: "Remen",
 		Age:   27,
 	}
-	p.ChildrenAge = make(map[string]uint8)
+	p.ChildrenAge = make(map[string]uint32)
 	p.ChildrenAge["Alex"] = 5
 	p.ChildrenAge["Maria"] = 2
 
