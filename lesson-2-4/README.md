@@ -44,6 +44,47 @@ background-size: 130%
 
 ---
 
+# Что хранить в переменных окружения?
+
+
+Конфигурация приложения – это всё, что может меняться между развёртываниями
+
+    - Идентификаторы подключения к ресурсам / сторонним службам
+    - Регистрационные данные для подключения к внешним сервисам, (Amazon S3 / Twitter)
+    - Значения зависимые от среды развёртывания (каноническое имя хоста)
+
+
+---
+
+# Подходы к конфигурации:
+
+- файлы
+
+```
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+```
+
+
+- переменные окружения
+
+```
+env
+
+TRMPLN_IDENTITY_HANDLE=http://127.0.0.1:8080/matches
+VISITOR_TTL=60
+WORKERS=10
+```
+
+
+---
+
+
 # Можно просто читать yaml/json/ini в структуру
 
 ```
@@ -99,7 +140,6 @@ func main() {
 ```
 SHORTENER_HOST=localhost SHORTENER_PORT=7777 go run main.go
 ```
-
 
 ---
 
@@ -209,7 +249,26 @@ type config struct {
 	TempFolder   string        `env:"TEMP_FOLDER" envDefault:"${HOME}/tmp" envExpand:"true"`
 }
 ```
+---
 
+# Confita
+
+go get -u github.com/heetch/confita
+<br>
+- поддерживает примитивы Go
+- поддерждивает несколько "бэкэндов"
+
+```
+loader := confita.NewLoader(
+  env.NewBackend(),
+  file.NewBackend("/path/to/config.json"),
+  file.NewBackend("/path/to/config.yaml"),
+  flags.NewBackend(),
+  etcd.NewBackend(etcdClientv3),
+  consul.NewBackend(consulClient),
+  vault.NewBackend(vaultClient),
+)
+```
 
 ---
 
@@ -384,6 +443,12 @@ viper.SafeWriteConfigAs("/path/to/my/.other_config")
 
 ---
 
+# Логирование
+
+Журнал - это поток агрегированных, упорядоченных по времени событий, собранных из потоков вывода всех запущенных процессов и вспомогательных сервисов. Журнал в своём сыром виде обычно представлен текстовым форматом с одним событием на строчку (хотя трассировки исключений могут занимать несколько строк). Журнал не имеет фиксированного начала и конца, поток сообщений непрерывен, пока работает приложение.
+
+---
+
 # Логирование из коробки
 
 ```
@@ -437,8 +502,10 @@ func main() {
 
 # Zap
 
-- It provides both structured logging and printf style logging
-- It is supposedly very fast
+https://github.com/uber-go/zap
+
+- есть и printf, и structured logging
+- очень быстрый
 
 .right-image[
 ![](img/zap.png)
@@ -576,31 +643,12 @@ logger.Info("This should have a bracketed level name")
 
 ---
 
-# Домашнее задание
-
-Реализовать утилиту envdir на Go.
-<br><br>
-
-Эта утилита позволяет запускать программы получая переменные окружения из определенной директории.
-Пример использования:
-
-```
-go-envdir /path/to/env/dir some_prog
-```
-
-Если в директории /path/to/env/dir содержатся файлы
-* `A_ENV` с содержимым `123`
-* `B_VAR` с содержимым `another_val`
-То программа `some_prog` должать быть запущена с переменными окружения `A_ENV=123 B_VAR=another_val`
-
----
-
 # Опрос
 
 .left-text[
 Заполните пожалуйста опрос
 <br><br>
-[https://otus.ru/polls/3938/](https://otus.ru/polls/3938/)
+[https://otus.ru/polls/3981/](https://otus.ru/polls/3981/)
 ]
 
 .right-image[
