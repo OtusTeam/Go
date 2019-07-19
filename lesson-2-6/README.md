@@ -281,8 +281,6 @@ Name      string            // имя поля
 Type      reflect.Type      // рефлексия типа поля
 Tag       reflect.StructTag // описание тэгов конкретного поля
 Offset    uintptr           // смещение в структуре
-...
-}
 ```
 
 ---
