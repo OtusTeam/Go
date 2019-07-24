@@ -2,17 +2,26 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="09ddb502-1e06-4ca6-b90c-cf4b05e4de66" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/05_fmtvsstrconv/fmtvsstrconv.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/05_fmtvsstrconv/fmtvsstrconv_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/07_stringbuilder/stringbuilder.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/07_stringbuilder/stringbuilder_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/08_syncpool/syncpool.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/08_syncpool/syncpool_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/09_pointerkeys/pointerkeys.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/10_exjs/exjs.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/10_exjs/exjs_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/11_reusehttp/reusehttp.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/11_reusehttp/reusehttp_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/12_httpserver/fast.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/12_httpserver/standard.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/12_httpserver/test.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/13_pprof_console/help.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/13_pprof_console/prealloc.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/13_pprof_console/prealloc_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/14_pprof_svg_and_web/help.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/14_pprof_svg_and_web/standard.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/15_flamegraph/help.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/15_flamegraph/standard.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/16_trace/help.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/16_trace/standard.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/04_reuse/reuse.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/04_reuse/reuse.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/04_reuse/reuse_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/04_reuse/reuse_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/05_stringsvsre/stringsvsre.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/06_stringsvsre/stringsvsre.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/05_stringsvsre/stringsvsre_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/06_stringsvsre/stringsvsre_test.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -44,9 +53,20 @@
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/16_trace" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/16_trace" />
+      <recent name="$PROJECT_DIR$/src/15_flamegraph" />
+      <recent name="$PROJECT_DIR$/src/14_pprof_svg_and_web" />
+      <recent name="$PROJECT_DIR$/src/13_pprof_console" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">

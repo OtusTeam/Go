@@ -93,6 +93,10 @@ background-size: 130%
 
 ---
 
+# Библиотека fasthttp
+
+---
+
 # pprof - работаем с консолью
 
 ---
@@ -142,6 +146,17 @@ https://forms.gle/SiDmYTPUU5La3rA88
 ---
 
 ## Вопросы?
+
+---
+
+# Дополнительное чтение
+
+- https://stephen.sh/posts/quick-go-performance-improvements
+- https://dave.cheney.net/high-performance-go-workshop/dotgo-paris.html
+- https://habr.com/ru/company/badoo/blog/301990/
+- https://habr.com/ru/company/badoo/blog/324682/
+- https://habr.com/ru/company/mailru/blog/331784/
+- https://habr.com/ru/post/443378/
 
 ---
 
