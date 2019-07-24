@@ -2,18 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="09ddb502-1e06-4ca6-b90c-cf4b05e4de66" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/01_bench/exbench_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/02_benchpar/benchpar.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/02_benchpar/ex.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/02_benchpar/exbenchpar_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/03_prealloc/prealloc.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/03_prealloc/prealloc_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/04_reuse/reuse.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/04_reuse/reuse_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/05_stringsvsre/stringsvsre.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/05_stringsvsre/stringsvsre_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/05_fmtvsstrconv/fmtvsstrconv.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/05_fmtvsstrconv/fmtvsstrconv_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/07_stringbuilder/stringbuilder.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/07_stringbuilder/stringbuilder_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/08_syncpool/syncpool.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/08_syncpool/syncpool_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/04_reuse/reuse.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/04_reuse/reuse.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/04_reuse/reuse_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/04_reuse/reuse_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/05_stringsvsre/stringsvsre.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/06_stringsvsre/stringsvsre.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/05_stringsvsre/stringsvsre_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/06_stringsvsre/stringsvsre_test.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,11 +26,6 @@
         <option value="Go File" />
       </list>
     </option>
-  </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>Need more</find>
-    </findStrings>
   </component>
   <component name="GOROOT" path="/usr/local/go" />
   <component name="Git.Settings">

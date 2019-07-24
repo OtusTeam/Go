@@ -1,14 +1,21 @@
 package reuse
 
-import (
-	"fmt"
-	"strconv"
-)
+import "encoding/json"
 
-func Slow() string {
-	return fmt.Sprintf("%d",42)
+type A struct {
+	I int
 }
 
-func Fast() string {
-	return strconv.Itoa(42)
+func Slow() {
+	for i := 0; i < 1000; i++ {
+		a := &A{}
+		json.Unmarshal([]byte("{\"i\": 32}"), a)
+	}
+}
+
+func Fast() {
+	a := &A{}
+	for i := 0; i < 1000; i++ {
+		json.Unmarshal([]byte("{\"i\": 32}"), a)
+	}
 }
