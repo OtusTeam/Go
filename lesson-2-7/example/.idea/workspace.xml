@@ -2,26 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="09ddb502-1e06-4ca6-b90c-cf4b05e4de66" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/09_pointerkeys/pointerkeys.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/10_exjs/exjs.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/10_exjs/exjs_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/11_reusehttp/reusehttp.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/11_reusehttp/reusehttp_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/12_httpserver/fast.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/12_httpserver/standard.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/12_httpserver/test.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/13_pprof_console/help.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/13_pprof_console/prealloc.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/13_pprof_console/prealloc_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/14_pprof_svg_and_web/help.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/14_pprof_svg_and_web/standard.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/15_flamegraph/help.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/15_flamegraph/standard.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/16_trace/help.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/16_trace/standard.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/github.com/valyala/bytebufferpool" beforeDir="false" afterPath="$PROJECT_DIR$/src/github.com/valyala/bytebufferpool" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/github.com/valyala/bytebufferpool/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/src/github.com/valyala/bytebufferpool/go.mod" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -40,6 +22,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
   <component name="ProjectFrameBounds" fullScreen="true">
     <option name="width" value="1440" />
     <option name="height" value="900" />
@@ -53,19 +38,21 @@
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
+    <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/src/16_trace" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/16_trace" />
       <recent name="$PROJECT_DIR$/src/15_flamegraph" />
       <recent name="$PROJECT_DIR$/src/14_pprof_svg_and_web" />
       <recent name="$PROJECT_DIR$/src/13_pprof_console" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/99_practice/optima" />
+      <recent name="$PROJECT_DIR$/src" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -144,5 +131,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+    <proxy>direct</proxy>
   </component>
 </project>
