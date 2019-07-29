@@ -52,17 +52,23 @@ import (
 	"fmt"
 )
 
-//go:generate ./command.sh
+//go:generate echo "Hello, world!"
 
 func main() {
-	fmt.Println("if you type 'go generate' in this directory command.sh will be run")
+	fmt.Println("run any unix command in go:generate")
 }
+```
+
+```
+> go generate
+Hello, world!
 ```
 
 ---
 
 # Зачем?
 
+ - генерировать структуры на основе JSON
  - генерировать заглушки для интерфейсов (mocks для тестов)
  - protobufs: генерировать кода из описания протокола (.proto)
  - yacc: генерация .go файлов из  yacc (.y)
@@ -123,6 +129,16 @@ go run -ldflags '-X main.VersionString=1.0' main.go
 - инструменты генерации кода "невидимы" для пользователя, и могут быть недоступны для него
 - go generate работает только с .go-файлами, как часть тулкита go 
 
+
+- не забывайте добавлять disclaimer
+
+```
+/*
+* CODE GENERATED AUTOMATICALLY WITH github.com/ernesto-jimenez/gogen/unmarshalmap
+* THIS FILE SHOULD NOT BE EDITED BY HAND
+*/
+```
+
 https://docs.google.com/document/d/1V03LUfjSADDooDMhe-_K59EgpTEm3V8uvQRuNMAEnjg/edit
 
 ---
@@ -169,31 +185,28 @@ The rename processor would be a simple wrapping of gofmt -r, perhaps written as 
 
 There are many more possibilities, and it is a goal of this proposal to encourage experimentation with pre-build-time code generation.
 
---
-
-# TODO:
-
-пример дженерика на go generate
-
 
 ---
 
 # Вернемся к дженерикам
 
 ```
-The generic dilemma is this: do you want slow programmers, slow compilers and bloated binaries, or slow execution times?
+The generic dilemma is this: do you want slow programmers, 
+slow compilers and bloated binaries, or slow execution times?
 (c) Russ Cox
 ```
 
+---
+
 # Какие варианты:
 
-- copy & paste (strings and bytes)
+- copy & paste (см. пакеты strings and bytes)
 - интерфейсы
 ```
 type Interface interface {
-	Len() int
-	Less(i, j int) bool
-	Swap(i, j int)
+    Len() int
+    Less(i, j int) bool
+    Swap(i, j int)
 }
 ```
 - type assertions
@@ -202,9 +215,47 @@ type Interface interface {
 
 ---
 
-# Wrap up
+# Generics!
 
-https://appliedgo.net/generics/
+```
+go get github.com/cheekybits/genny
+```
+
+объявляем заглушки по типам:
+
+```
+type KeyType generic.Type
+type ValueType generic.Type
+```
+
+пишем обычный код:
+
+```
+func SetValueTypeForKeyType(key KeyType, value ValueType) { /* ... */ }
+```
+
+---
+
+# Генерация go структур из JSON
+
+https://mholt.github.io/json-to-go/
+
+```
+go get github.com/ChimeraCoder/gojson/gojson
+```
+
+```
+cat schema.json| gojson -name Person
+
+package main
+
+type Person struct {
+        Age     int64    `json:"age"`
+        Courses []string `json:"courses"`
+        Name    string   `json:"name"`
+}
+```
+
 
 ---
 
