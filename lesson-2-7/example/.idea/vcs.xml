@@ -2,5 +2,11 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$/../.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/github.com/klauspost/compress" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/github.com/klauspost/cpuid" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/github.com/mailru/easyjson" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/github.com/valyala/bytebufferpool" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/github.com/valyala/fasthttp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/github.com/wawandco/fako" vcs="Git" />
   </component>
 </project>
