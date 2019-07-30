@@ -143,25 +143,27 @@ https://docs.google.com/document/d/1V03LUfjSADDooDMhe-_K59EgpTEm3V8uvQRuNMAEnjg/
 
 ---
 
-# Yacc
-
-As outlined above, we define a custom command
-
-	//go:generate -command yacc go tool yacc
-
-and then anywhere in main.go (say) we write
-
-	//go:generate yacc -o foo.go foo.y
-
----
-
 # Binary data
 
-A tool that converts binary files into byte arrays that can be compiled into Go binaries would work similarly. Again, in the Go source we write something like
+```
+go get -u github.com/go-bindata/go-bindata/...
+```
 
+```
+go-bindata -o myfile.go data/
+```
+
+```
 //go:generate bindata -o jpegs.go pic1.jpg pic2.jpg pic3.jpg
+```
 
-This is also demonstrates another reason the annotations are in Go source: there is no easy way to inject them into binary files.
+
+```
+	b, err := Asset("pic1.jpg")
+	if err != nil {
+		log.Fatalf("unable to get template: %v", err)
+	}
+```
 
 
 ---
@@ -245,7 +247,15 @@ go get github.com/ChimeraCoder/gojson/gojson
 ```
 
 ```
-cat schema.json| gojson -name Person
+{
+  "name" : "Alex",
+  "age": 24,
+  "courses": ["go", "python"]
+}
+```
+
+```
+cat schema.json | gojson -name Person
 
 package main
 
@@ -259,7 +269,7 @@ type Person struct {
 
 ---
 
-# impl
+# impl: моки интерфейсов
 
 ```
 go get -u github.com/josharian/impl
@@ -280,8 +290,15 @@ func (f *File) Close() error {
 }
 ```
 
+---
+
+# impl: моки интерфейсов
+
 ```
 impl 's *Shortener' github.com/nyddle/shortener/service.Shortener
+```
+
+```
 func (s *Shortener) Shorten(url string) string {
 	panic("not implemented")
 }
@@ -290,33 +307,6 @@ func (s *Shortener) Resolve(url string) string {
 	panic("not implemented")
 }
 
-```
-
----
-
----
-
-# TODO: implement shortener interface
-
-
----
-
-# JSON Enums
-
-```
-go get github.com/campoy/jsonenums
-```
-
-```
-//go:generate jsonenums -type=Status
-type Status int
-
-const (
-	Pending Status = iota
-	Sent
-	Received
-	Rejected
-)
 ```
 
 ---
@@ -344,6 +334,46 @@ func main() {
 	fmt.Printf("Message is %s", status) // Message is Sent
 }
 ```
+
+
+
+
+---
+
+# JSON Enums
+
+```
+go get github.com/campoy/jsonenums
+```
+
+```
+func (t T) MarshalJSON() ([]byte, error)
+func (t *T) UnmarshalJSON([]byte) error
+```
+
+```
+//go:generate jsonenums -type=Status
+type Status int
+
+const (
+	Pending Status = iota
+	Sent
+	Received
+	Rejected
+)
+```
+
+---
+
+# Что посмотрели:
+
+- моки интерфейсов: github.com/josharian/impl
+- Stringer: String() для Enums: golang.org/x/tools/cmd/stringer
+- Marshal/Unmarhsal для Enums:  github.com/campoy/jsonenums
+- генерация структур из JSON: github.com/ChimeraCoder/gojson/gojson
+
+больше примеров для вдохновения:
+https://github.com/avelino/awesome-go#generation-and-generics
 
 ---
 
@@ -373,42 +403,57 @@ protobuf:
 
 ---
 
-# Protocol buffers: запись и чтение
+# Protocol buffers: формат протокола
+
+https://developers.google.com/protocol-buffers/docs/proto3
 
 ```
-	course := &myotus.Course{
-		Title:   "Golang",
-		Teacher: []*myotus.Teacher{{Name: "Dmitry Smal", Id: 1}, {Name: "Alexander Davydov", Id: 2}},
-	}
+syntax = "proto3";
 
-	out, err := proto.Marshal(course)
-	if err != nil {
-		log.Fatalln("Failed to encode address book:", err)
-	}
-```
+package demo;
 
-```
-	otusdb := &myotus.Otus{}
-	if err := proto.Unmarshal(in, otusdb); err != nil {
-		log.Fatalln("Failed to parse otus database:", err)
-	}
+
+message People {
+    repeated Person person = 1;
+}
+
+message Person {
+    string name = 1;
+    repeated Address address = 2;
+    repeated string mobile = 3;
+    repeated string email = 4;
+}
+
+message Address {
+    string street = 1;
+    int32 number = 2;
+}
 ```
 
 ---
 
-# Protocol buffers: чтение
+# Protocol buffers: кодогенерация
 
+```
+go get -u github.com/golang/protobuf/protoc-gen-go
+```
+
+```
+	//go:generate protoc -go_out=. file.proto
+```
+
+globbing не поддерживается:
+
+```
+	//go:generate protoc -go_out=. file1.proto file2.proto
+```
+
+
+Caveat: The protoc program must be run at the root of the source tree; we would need to provide a -cd option to it or wrap it somehow.
 
 ---
 
-# Protocol buffers: типы данных
-
-
-
-
----
-
-# Protocol buffers: go code
+# Protocol buffers: кодогенерация
 
 ```
 message Foo {}
@@ -429,54 +474,67 @@ func (m *Foo) String() string { return proto.CompactTextString(m) }
 func (*Foo) ProtoMessage()    {}
 ```
 
-
-
 ---
 
-# Protocol buffers
-
-The process is the same as with yacc. Inside main.go, we write, for each protocol buffer file we have, a line like
-
-	//go:generate protoc -go_out=. file.proto
-
-Because of the way protoc works, we could generate multiple proto definitions into a single .pb.go file like this:
-
-	//go:generate protoc -go_out=. file1.proto file2.proto
-
-Since no globbing is provided, one cannot say *.proto, but this is intentional, for simplicity and clarity of dependency.
-
-Caveat: The protoc program must be run at the root of the source tree; we would need to provide a -cd option to it or wrap it somehow.
-
----
-
-# Protocol buffers: Packages and input paths
-
-Каждый .proto файлик соответствует пакету
+# Protocol buffers: запись и чтение
 
 ```
-option go_package = "github.com/golang/protobuf/ptypes/any";
+	course := &myotus.Course{
+		Title:   "Golang",
+		Teacher: []*myotus.Teacher{{Name: "Dmitry Smal", Id: 1}, 
+								   {Name: "Alexander Davydov", Id: 2}},
+	}
+
+	out, err := proto.Marshal(course)
+	if err != nil {
+		log.Fatalln("Failed to encode", err)
+	}
+```
+
+```
+	otusdb := &myotus.Otus{}
+	if err := proto.Unmarshal(in, otusdb); err != nil {
+		log.Fatalln("Failed to parse otus database:", err)
+	}
+```
+
+
+---
+
+# Protocol buffers: типы данных
+<br><br>
+https://developers.google.com/protocol-buffers/docs/proto3<br><br>
+
+Скаляры: default, float, int{32,64}, string, bytes
+
+Поля: одиночные, repeated (порядок сохраняется), reserved (полезно для удаленных полей)
+
+```
+message Foo {
+  reserved 2, 15, 9 to 11;
+  reserved "foo", "bar";
+}
+```
+
+enums, должны начинаться с 0 как default value
+```
+enum Corpus {
+    UNIVERSAL = 0;
+    WEB = 1;
+    IMAGES = 2;
+```
+
+Maps: 
+```
+map<string, Project> projects = 3;
 ```
 
 ---
 
-# Protocol buffers: generated code
+# Protocol buffers: задание
 
-A summary of the properties of the protocol buffer interface for a protocol buffer variable v:
-
-Names are turned from camel_case to CamelCase for export.
-There are no methods on v to set fields; just treat them as structure fields.
-There are getters that return a field's value if set, and return the field's default value if unset. The getters work even if the receiver is a nil message.
-The zero value for a struct is its correct initialization state. All desired fields must be set before marshaling.
-A Reset() method will restore a protobuf struct to its zero state.
-Non-repeated fields are pointers to the values; nil means unset. That is, optional or required field int32 f becomes F *int32.
-Repeated fields are slices.
-Helper functions are available to aid the setting of fields. Helpers for getting values are superseded by the GetFoo methods and their use is deprecated. msg.Foo = proto.String("hello") // set field
-Constants are defined to hold the default values of all fields that have them. They have the form Default_StructName_FieldName. Because the getter methods handle defaulted values, direct use of these constants should be rare.
-Enums are given type names and maps from names to values. Enum values are prefixed with the enum's type name. Enum types have a String method, and a Enum method to assist in message construction.
-Nested groups and enums have type names prefixed with the name of the surrounding message type.
-Extensions are given descriptor names that start with E_, followed by an underscore-delimited list of the nested messages that contain it (if any) followed by the CamelCased name of the extension field itself. HasExtension, ClearExtension, GetExtension and SetExtension are functions for manipulating extensions.
-Oneof field sets are given a single field in their message, with distinguished wrapper types for each possible field value.
-Marshal and Unmarshal are functions to encode and decode the wire format.
+<br><br><br>
+Сгенерировать схему/код для работы с  
 
 
 ---
@@ -489,23 +547,85 @@ Marshal and Unmarshal are functions to encode and decode the wire format.
 
 ---
 
+# Тестирование: табличные тесты
+
+```
+func TestIndex(t *testing.T) {
+    var tests = []struct {
+        s   string
+        sep string
+        out int
+    }{
+        {"", "", 0},
+        {"", "a", -1},
+        {"fo", "foo", -1},
+        {"foo", "foo", 0},
+        {"oofofoofooo", "f", 2},
+        // etc
+    }
+    for _, test := range tests {
+        actual := strings.Index(test.s, test.sep)
+        if actual != test.out {
+            t.Errorf("Index(%q,%q) = %v; want %v", test.s, test.sep, actual, test.out)
+        }
+    }
+}
+```
+
+---
+
+# Тестирование: data access layer
+
+```
+type DataAccessLayer interface {
+  FindAuthor(int) Author
+  FindPostsForAuthor(Author) []Post
+  FindCommentsForPost(Post) []Comment
+}
+```
+
+```
+type TestDAL {
+  Author   Author
+  Posts    []Post
+  Comments []Comment
+}
+
+func (t *TestDAL) FindAuthor(int) Author {
+  return t.Author
+}
+
+func (t *TestDAL) FindPostsForAuthor(Author) []Post {
+  return t.Posts
+}
+
+func (t *TestDAL) FindCommentsForPost(Post) []Comment {
+  return t.Comments
+}
+```
+
+```
+func TestDALCollaborator(t *testing.T) {
+  dal := TestDAL{Author: Author{}}
+  collaborator := Collaborator{DAL: dal}
+
+  result := collaborator.FunctionNeedingAnAuthor()
+
+  // Some verification
+}
+```
+
+---
+
+
 
 # Домашнее задание
 
-Реализовать утилиту envdir на Go.
 <br><br>
 
-Эта утилита позволяет запускать программы получая переменные окружения из определенной директории.
-Пример использования:
-
-```
-go-envdir /path/to/env/dir some_prog
-```
-
-Если в директории /path/to/env/dir содержатся файлы
-* `A_ENV` с содержимым `123`
-* `B_VAR` с содержимым `another_val`
-То программа `some_prog` должать быть запущена с переменными окружения `A_ENV=123 B_VAR=another_val`
+Сделать "заготовку" для микросервиса-календаря. 
+Определить структуру определяющую событие, написать методы для добавления/изменения/удаления событий. 
+Хранить события в памяти, без персистентности.
 
 ---
 
@@ -514,7 +634,7 @@ go-envdir /path/to/env/dir some_prog
 .left-text[
 Заполните пожалуйста опрос
 <br><br>
-[https://otus.ru/polls/3938/](https://otus.ru/polls/3938/)
+[https://otus.ru/polls/4402/](https://otus.ru/polls/4402/)
 ]
 
 .right-image[
