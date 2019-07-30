@@ -42,7 +42,6 @@ background-size: 130%
 
 ---
 
-
 # Go generate
 
 ```
@@ -63,6 +62,33 @@ func main() {
 > go generate
 Hello, world!
 ```
+
+---
+
+# Go generate
+<br>
+псевдоним:
+```
+//go:generate -command foo go tool foo
+```
+
+regexp:
+```
+go generate -run enums
+```
+
+выводить команды:
+```
+go generate -x
+
+```
+
+список команд к выполнения:
+```
+go generate -x
+```
+
+
 
 ---
 
@@ -93,29 +119,6 @@ Hello, world!
 	% git commit
 ```
 
----
-
-
-# иногда достаточно ldflags
-
-```
-package main
-
-import (
-	"fmt"
-)
-
-var VersionString = "unset"
-
-func main() {
-	fmt.Println("Version:", VersionString)
-}
-```
-
-```
-go run -ldflags '-X main.VersionString=1.0' main.go
-```
-
 
 ---
 
@@ -143,6 +146,30 @@ https://docs.google.com/document/d/1V03LUfjSADDooDMhe-_K59EgpTEm3V8uvQRuNMAEnjg/
 
 ---
 
+
+# иногда достаточно ldflags
+
+```
+package main
+
+import (
+	"fmt"
+)
+
+var VersionString = "unset"
+
+func main() {
+	fmt.Println("Version:", VersionString)
+}
+```
+
+```
+go run -ldflags '-X main.VersionString=1.0' main.go
+```
+
+
+---
+
 # Binary data
 
 ```
@@ -164,28 +191,6 @@ go-bindata -o myfile.go data/
 		log.Fatalf("unable to get template: %v", err)
 	}
 ```
-
-
----
-
-Sort
-
-One could imagine a variant sort implementation that allows one to specify concrete types that have custom sorters, just by automatic rewriting of macro-like sort definition. To do this, we write a sort.go file that contains a complete implementation of sort on an explicit but undefined type spelled, say, TYPE. In that file we provide a build tag so it is never compiled (TYPE is not defined, so it won't compile) but is processed by go generate:
-
-	// +build generate
-
-Then we write an generator directive for each type for which we want a custom sort:
-
-//go:generate rename TYPE=int
-//go:generate rename TYPE=strings
-
-or perhaps
-
-	//go:generate rename TYPE=int TYPE=strings
-
-The rename processor would be a simple wrapping of gofmt -r, perhaps written as a shell script.
-
-There are many more possibilities, and it is a goal of this proposal to encourage experimentation with pre-build-time code generation.
 
 
 ---
@@ -534,16 +539,9 @@ map<string, Project> projects = 3;
 # Protocol buffers: задание
 
 <br><br><br>
-Сгенерировать схему/код для работы с  
+Сгенерировать схему/код для работы с событиями календаря:
+название, начало, конец, тип события (enum: встреча, напоминание, другое)
 
-
----
-
-# Protocol buffers: обратная совместимость
-
-- you must not change the tag numbers of any existing fields.
-- you may delete fields.
-- you may add new fields but you must use fresh tag numbers (i.e. tag numbers that were never used in this protocol buffer, not even by deleted fields).
 
 ---
 
