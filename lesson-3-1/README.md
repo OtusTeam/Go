@@ -89,7 +89,7 @@ c000000000-c000800000 rw-p 00000000 00:00 0
 .big-list[
 * Stack (System Stack) - не нужно, просто уменьшите регистр `SP`, нельзя выходить за `RLIMIT_STACK`
 * Heap - системный вызов `brk`, устанавливает ограничение размера `Heap`
-* Отдельные сегменты - системный вызовы `mmap`, позволяющий добавить в вирутальную память новый сегмент, отображенный на файл или просто физическую память.
+* Отдельные сегменты - системный вызовы `mmap`, позволяющий добавить в виртуальную память новый сегмент, отображенный на файл или просто физическую память.
 ]
 
 Отличное видео по теме: [https://www.youtube.com/watch?v=bhdkFPGhxfI](https://www.youtube.com/watch?v=bhdkFPGhxfI)
@@ -235,20 +235,20 @@ type heapArena struct {
 // runtime/mheap.go
 
 type mspan struct {
-	next *mspan           // следующий span в списке
-	prev *mspan           // предыдущий
+  next *mspan           // следующий span в списке
+  prev *mspan           // предыдущий
 
-	startAddr uintptr     // начало адресуемой памяти
-	npages    uintptr     // количество 8Кб страниц
-	nelems uintptr        // количество "объектов" в span
+  startAddr uintptr     // начало адресуемой памяти
+  npages    uintptr     // количество 8Кб страниц
+  nelems uintptr        // количество "объектов" в span
   allocCount  uint16    // количество "выделенных" объектов
   elemsize    uintptr   // размер "объекта" в span
-	limit       uintptr   // конец адресуемой памяти
+  limit       uintptr   // конец адресуемой памяти
 
-	allocBits  *gcBits    // (*uint8) карта выделенных объектов
-	gcmarkBits *gcBits    // (*uint*) карта отметок для GC
-	
-	spanclass   spanClass // класс span, типовой размер объекта )
+  allocBits  *gcBits    // (*uint8) карта выделенных объектов
+  gcmarkBits *gcBits    // (*uint*) карта отметок для GC
+
+  spanclass   spanClass // класс span, типовой размер объекта )
   ...
 }
 ```
@@ -262,17 +262,17 @@ type mspan struct {
 type mheap struct {
   lock      mutex
   free      mTreap  // дерево свободных span-ов
-  sweepgen  uint32  // для GC	
-	
-  allspans []*mspan // слайс со всем существующими Span
-  
-  // массив выделеных Arena (см arenaIndex)
-  arenas [1 << arenaL1Bits]*[1 << arenaL2Bits]*heapArena
-
+ 
   // списки свободных и занятых Span-ов по классам
   central [numSpanClasses]struct {
     mcentral mcentral
   }
+
+  // массив выделеных Arena (см arenaIndex)
+  arenas [1 << arenaL1Bits]*[1 << arenaL2Bits]*heapArena
+
+  sweepgen  uint32         // итерация GC
+  sweepSpans [2]gcSweepBuf // спискс Span-ов для очистки Gc
 }
 
 // runtime/mcentral.go
@@ -341,12 +341,167 @@ type mcache struct {
 ---
 
 
-# Алгоритм выделения
+# Алгоритм выделения памяти
 
 .main-image[
   ![img/alloc_algo.png](img/alloc_algo.png)
 ]
-Кстати, про TCMalloc: [http://goog-perftools.sourceforge.net/doc/tcmalloc.html](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
+
+---
+
+# Алгоритм освобождения
+
+.big-list[
+
+* В какой-то момент времени в занятом Span освобождается место
+
+* Возвращаем Span в соответствующий список свободных Span-ов `mheap.central[cls].mcentral.nonempty`
+
+* Если Span полностью полностью свободен, пытаемся соединить с соседними (`coalesce`) и возвращаем в дерево свободных Span-ов `mheaf.free`
+]
+Кто удаляет объект из Span ? 
+
+---
+
+
+# Сборка мусора
+
+В Go для сборки мусор используется алгоритм Concurrent Mark & Sweep
+
+<br><br><br>
+
+.left-image[
+![img/markandsweep.gif](img/markandsweep.gif)
+]
+
+.right-text[
+Корневые объекты в Go:
+<br><br>
+* Глобальные переменные
+
+* Стеки выполняющихся горутин
+]
+
+---
+
+# Переход между объектами
+
+GC работает с областями памяти и не знает про типы объектов. <br>
+Как GC может перейти "по указателям" в объектах ?
+<br><br>
+.left-text[
+Допустим у нас есть объект типа:
+
+```
+type Row struct {
+  index int
+  data []interface{}
+}
+```
+]
+.right-image[
+![img/object_layout.png](img/object_layout.png)
+]
+
+<br><br>
+В типе данного объекта хранится информация о расположении указателей.<br>
+При выделении памяти под объект эта информации сохраняется в битовой карте соответствующей `heapArena`
+---
+
+# Битовые карты указателей
+
+.main-image[
+![img/mheap_bitmap.png](img/mheap_bitmap.png)
+]
+
+---
+
+# Изменение топологии
+
+Допустим у нас есть код вида
+```
+func code(jobs <-chan interface{}) {
+    // do some work
+    // gc marked the stack as black
+    // do some work
+    job := <- chan
+    // do some work
+}
+```
+И мы перемещаем указатель до того как GC успел его пометить
+<br><br>
+.left-image[
+![img/wb_problem1.png](img/wb_problem1.png)
+]
+.right-image[
+![img/wb_problem2.png](img/wb_problem2.png)
+]
+
+---
+
+# Write barriers
+
+Для того что бы избежать потери объекта, компилятор преобразует присвоения указателей
+в специальные вызовы:
+
+.main-image[
+![img/wb.png](img/wb.png)
+]
+
+Здесь `shade` - отмечает объект серым и помещает в очередь GC для дальнейшего анализа.
+Write barriers активны только на этапе разметки объектов `_GCMark`.
+---
+
+# Фазы работы GC
+
+`runtime.gcStart` - точка входа в Garbage collector.
+<br><br>
+
+#### Завершение очистки
+* завершение очистки Span-ов из `mheap_.sweepSpans[1-sg/2%2]`
+* запуск горутин `gcBgMarkWorker` для разметки объектов
+  
+#### _GCMark
+* stop the world
+* завершение очисти Span-ов
+* инициализация очереди разметки корневыми объектами
+* start the world
+* ожидание завершения всех `gcBgMarkWorker`
+
+#### _GCmarktermination
+* stop the world
+* завершение разметки Span-ов
+* start the world
+  
+#### _GCoff
+* увеличивается итерация GC `mheap_.sweepdone`
+* фоновая очистка Span-ов из `mheap_.sweepSpans[1-sg/2%2]`
+  
+---
+
+# Моменты запуска GC
+
+.big-list[
+
+* периодически из потока `sysmon`, если прошло достаточно много времени с последнего запуска
+  
+* после выделения памяти, если выделен большой Span или не удалось выделить быстро
+ 
+* при ручном вызове `runtime.GC()`
+
+]
+
+---
+
+# Ссылки
+
+.big-list[
+* [http://goog-perftools.sourceforge.net/doc/tcmalloc.html](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
+* [https://programmer.help/blogs/exploration-of-golang-source-code-3-realization-principle-of-gc.html](https://programmer.help/blogs/exploration-of-golang-source-code-3-realization-principle-of-gc.html)
+* [https://blog.golang.org/ismmkeynote](https://blog.golang.org/ismmkeynote)
+* [https://about.sourcegraph.com/go/gophercon-2018-allocator-wrestling](https://about.sourcegraph.com/go/gophercon-2018-allocator-wrestling)
+* [http://gchandbook.org](http://gchandbook.org)
+]
 
 ---
 
@@ -355,7 +510,7 @@ type mcache struct {
 .left-text[
 Заполните пожалуйста опрос
 <br><br>
-[https://otus.ru/polls/4047/](https://otus.ru/polls/4047/)
+[]()
 ]
 
 .right-image[

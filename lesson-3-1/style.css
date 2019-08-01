@@ -34,6 +34,10 @@ body {
   /* default middle class */
 }
 
+br {
+  clear:both;
+  height: 1em;
+}
 h1,
 h2,
 h3,
