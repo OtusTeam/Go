@@ -24,7 +24,7 @@ class: white
 background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
-# Go Internals
+# Go Memory
 
 ### Дмитрий Смаль
 
@@ -34,13 +34,9 @@ background-image: url(img/message.svg)
 
 .big-list[
 * Память процесса в Linux
-* Выделение памяти
-* Структура памяти в Go (куча, стэки)
-* Работа GC
-* Информация о типах
-* Что происходит при блокирующем syscall ?
-* Что такое CGO ? 
-* Как работает NetPoll ?
+* Структура стеков и кучи в Go
+* Выделение и освобождение памяти в Go
+* Механизм сборки мусора в Go
 ]
 
 ---
@@ -499,7 +495,7 @@ Write barriers активны только на этапе разметки об
 * [http://goog-perftools.sourceforge.net/doc/tcmalloc.html](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
 * [https://programmer.help/blogs/exploration-of-golang-source-code-3-realization-principle-of-gc.html](https://programmer.help/blogs/exploration-of-golang-source-code-3-realization-principle-of-gc.html)
 * [https://blog.golang.org/ismmkeynote](https://blog.golang.org/ismmkeynote)
-* [https://about.sourcegraph.com/go/gophercon-2018-allocator-wrestling](https://about.sourcegraph.com/go/gophercon-2018-allocator-wrestling)
+* !!! [https://about.sourcegraph.com/go/gophercon-2018-allocator-wrestling](https://about.sourcegraph.com/go/gophercon-2018-allocator-wrestling)
 * [http://gchandbook.org](http://gchandbook.org)
 ]
 
