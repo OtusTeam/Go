@@ -36,8 +36,8 @@ background-size: 130%
 
 .big-list[
 * Посмотрим, где нам может помочь генерация кода
-* Детально рассмотрим Protocol Buffers
-* Поговорим о тестировании
+* Посмотрим на Protocol Buffers
+* Совсем немного поговорим о тестировании
 ]
 
 ---
@@ -45,13 +45,13 @@ background-size: 130%
 # Go generate
 
 ```
+//go:generate echo "Hello, world!"
+
 package main
 
 import (
 	"fmt"
 )
-
-//go:generate echo "Hello, world!"
 
 func main() {
 	fmt.Println("run any unix command in go:generate")
@@ -85,7 +85,7 @@ go generate -x
 
 список команд к выполнения:
 ```
-go generate -x
+go generate -n
 ```
 
 
@@ -97,13 +97,8 @@ go generate -x
  - генерировать структуры на основе JSON
  - генерировать заглушки для интерфейсов (mocks для тестов)
  - protobufs: генерировать кода из описания протокола (.proto)
- - yacc: генерация .go файлов из  yacc (.y)
- - Unicode: generating tables from UnicodeData.txt
- - HTML: embedding .html files into Go source code
  - bindata: вставка бинарных данных JPEGs в код на Go в виде byte array
 
- - string methods: generating String() string methods for types used as enumerated constants
- - macros: generating customized implementations given generalized packages, such as sort.Ints from ints
 
 
 ---
@@ -146,30 +141,6 @@ https://docs.google.com/document/d/1V03LUfjSADDooDMhe-_K59EgpTEm3V8uvQRuNMAEnjg/
 
 ---
 
-
-# иногда достаточно ldflags
-
-```
-package main
-
-import (
-	"fmt"
-)
-
-var VersionString = "unset"
-
-func main() {
-	fmt.Println("Version:", VersionString)
-}
-```
-
-```
-go run -ldflags '-X main.VersionString=1.0' main.go
-```
-
-
----
-
 # Binary data
 
 ```
@@ -190,55 +161,6 @@ go-bindata -o myfile.go data/
 	if err != nil {
 		log.Fatalf("unable to get template: %v", err)
 	}
-```
-
-
----
-
-# Вернемся к дженерикам
-
-```
-The generic dilemma is this: do you want slow programmers, 
-slow compilers and bloated binaries, or slow execution times?
-(c) Russ Cox
-```
-
----
-
-# Какие варианты:
-
-- copy & paste (см. пакеты strings and bytes)
-- интерфейсы
-```
-type Interface interface {
-    Len() int
-    Less(i, j int) bool
-    Swap(i, j int)
-}
-```
-- type assertions
-- рефлексия
-- go generate
-
----
-
-# Generics!
-
-```
-go get github.com/cheekybits/genny
-```
-
-объявляем заглушки по типам:
-
-```
-type KeyType generic.Type
-type ValueType generic.Type
-```
-
-пишем обычный код:
-
-```
-func SetValueTypeForKeyType(key KeyType, value ValueType) { /* ... */ }
 ```
 
 ---
@@ -323,6 +245,10 @@ go get golang.org/x/tools/cmd/stringer
 ```
 
 ```
+func (t T) String() string
+```
+
+```
 //go:generate stringer -type=MessageStatus
 type MessageStatus int
 
@@ -339,8 +265,6 @@ func main() {
 	fmt.Printf("Message is %s", status) // Message is Sent
 }
 ```
-
-
 
 
 ---
@@ -370,12 +294,115 @@ const (
 
 ---
 
+# easyjson
+
+
+```
+go get -u github.com/mailru/easyjson/...
+```
+
+```
+easyjson -all <file>.go
+```
+
+ <br>
+генерирует MarshalEasyJSON / UnmarshalEasyJSON, для структур из файла
+<br>
+кратно быстрее за счет отсутствия рефлексии
+
+
+---
+
+# иногда достаточно ldflags
+
+```
+package main
+
+import (
+	"fmt"
+)
+
+var VersionString = "unset"
+
+func main() {
+	fmt.Println("Version:", VersionString)
+}
+```
+
+```
+go run -ldflags '-X main.VersionString=1.0' main.go
+```
+
+---
+
+# Задачка 
+
+написать программу, которая вывордит фразу из шаблона в template.txt
+используя кодогенерацию
+
+---
+
+# Вернемся к дженерикам
+
+```
+The generic dilemma is this: do you want slow programmers, 
+slow compilers and bloated binaries, or slow execution times?
+(c) Russ Cox
+```
+
+---
+
+# Какие варианты:
+
+- copy & paste (см. пакеты strings and bytes)
+- интерфейсы
+```
+type Interface interface {
+    Len() int
+    Less(i, j int) bool
+    Swap(i, j int)
+}
+```
+- type assertions
+- рефлексия
+- go generate
+
+---
+
+# Generics!
+
+```
+go get github.com/cheekybits/genny
+```
+
+```
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "KeyType=string,int ValueType=string,int"
+```
+
+объявляем заглушки по типам:
+
+```
+type KeyType generic.Type
+type ValueType generic.Type
+```
+
+пишем обычный код:
+
+```
+func SetValueTypeForKeyType(key KeyType, value ValueType) { /* ... */ }
+```
+
+---
+
 # Что посмотрели:
 
 - моки интерфейсов: github.com/josharian/impl
-- Stringer: String() для Enums: golang.org/x/tools/cmd/stringer
+- Stringer: String() для целочисленных типов: golang.org/x/tools/cmd/stringer
 - Marshal/Unmarhsal для Enums:  github.com/campoy/jsonenums
 - генерация структур из JSON: github.com/ChimeraCoder/gojson/gojson
+- easyjson для быстрой работы с JSON
+
+- generics при помощи кодогенерации
 
 больше примеров для вдохновения:
 https://github.com/avelino/awesome-go#generation-and-generics
@@ -454,7 +481,6 @@ globbing не поддерживается:
 ```
 
 
-Caveat: The protoc program must be run at the root of the source tree; we would need to provide a -cd option to it or wrap it somehow.
 
 ---
 
@@ -614,8 +640,6 @@ func TestDALCollaborator(t *testing.T) {
 ```
 
 ---
-
-
 
 # Домашнее задание
 
