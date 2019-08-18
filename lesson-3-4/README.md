@@ -576,13 +576,74 @@ background-size: 130%
 
 # gRPC: Errors
 
+https://grpc.io/docs/guides/error/
+https://godoc.org/google.golang.org/grpc/codes
+https://godoc.org/google.golang.org/grpc/status
+https://jbrandhorst.com/post/grpc-errors/
+http://avi.im/grpc-errors/
+
+```
+func (*server) SquareRoot(ctx context.Context, req *calculatorpb.SquareRootRequest) (*calculatorpb.SquareRootResponse, error) {
+	fmt.Println("Received SquareRoot RPC")
+	number := req.GetNumber()
+	if number < 0 {
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprintf("Received a negative number: %v", number),
+		)
+	}
+	return &calculatorpb.SquareRootResponse{
+		NumberRoot: math.Sqrt(float64(number)),
+	}, nil
+}
+```
+
+---
+
+# gRPC: Errors
+
+```
+	res, err := c.SquareRoot(context.Background(), &calculatorpb.SquareRootRequest{Number: n})
+	if err != nil {
+		respErr, ok := status.FromError(err)
+		if ok {
+			// actual error from gRPC (user error)
+			fmt.Printf("Error message from server: %v\n", respErr.Message())
+			fmt.Println(respErr.Code())
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("We probably sent a negative number!")
+				return
+			}
+		} else {
+			log.Fatalf("Big Error calling SquareRoot: %v", err)
+			return
+		}
+	}
+```
+
 
 ---
 
 # gRPC: Deadlines
 
+---
+
+# gRPC: Reflection + Evans CLI
 
 
+```
+import "google.golang.org/grpc/reflection"
+
+s := grpc.NewServer()
+pb.RegisterYourOwnServer(s, &server{})
+
+// Register reflection service on gRPC server.
+reflection.Register(s)
+
+s.Serve(lis)
+```
+
+https://github.com/ktr0731/evans
 
 ---
 
@@ -601,15 +662,49 @@ background-image: url(img/tcp-udp-otlichiya-5.png)
 
 ---
 
-
+class: black
+background-size: 75%
+background-image: url(img/cleanarch.jpg)
+# Clean Architecture
 
 ---
 
-# Debugging gRPC
+# Clean Architecture
+
+<br><br>
+
+https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
+
+<br><br><br>
+
+- независимость от фреймворка
+- тестируемость
+- независимоcть от UI
+- независимоcть от базы данных
+- независимость от какого-либо внешнего сервиса
+
+<b>Правило Зависимостей. Зависимости в исходном коде могут указывать только во внутрь. Ничто из внутреннего круга не может знать что-либо о внешнем круге, ничто из внутреннего круга не может указывать на внешний круг.
+
+---
+
+# Clean Architecture
+
+- Entities (models, модели)
+- Use Cases (controllers, сценарии)
+- Interface Adapters ()
+- Frameworks and Drivers (инфраструктура)
+
+---
+
+background-image: url(https://raw.githubusercontent.com/bxcodec/go-clean-arch/master/clean-arch.png)
+# Clean Architecture
+
+---
+
+# Clean Architecture
 
 
-
-
+https://github.com/bxcodec/go-clean-arch
 
 ---
 
