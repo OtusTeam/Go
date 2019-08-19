@@ -23,7 +23,7 @@ background-size: 130%
   # Как меня слышно и видно?
 ]
 
-.sound-bottom[
+.sound-bott om[
   ## > Напишите в чат
   ### **+** если все хорошо
   ### **–** если есть проблемы cо звуком или с видео
@@ -38,12 +38,9 @@ background-size: 130%
 ]
 
 # 
-- Изучить что такое контекст
-- Изучить особенности протоколов TCP и UDP
-- Изучить стандартные типы Conn и Dialer
-- Узнать о типичных сетевых проблемах
-- Научиться обеспечивать тайм-ауты
-- Научиться отлаживать сетевые проблемы
+- Научиться писать обратно совместимые схемы в Protobuf
+- Научиться писать gRPC сервисы 
+- Получить представление о Clean Architecture
 
 ---
 
@@ -66,14 +63,18 @@ background-size: 130%
 - double (float64)
 - float (float32)
 - bool (bool)
-- string (string)
+- string (string) UTF-8 / 7-bit ASCII
 - bytes ([]byte)
-
-
+- int{32,64} (отрицательные значения - 10 байт)
+- uint{32,64}
+- sint{32,64} (ZigZag для отрицательных значений)
 
 ---
 
-# Protocol buffers: типы данных 
+# Protocol buffers: wire types
+
+class: black
+background-image: url(img/tcp-udp-otlichiya-5.png)
 
 
 
@@ -507,7 +508,18 @@ enum Foo {
 
 # HTTP/2 vs HTTP
 
-[https://imagekit.io/demo/http2-vs-http1][1]
+https://imagekit.io/demo/http2-vs-http1
+https://developers.google.com/web/fundamentals/performance/http2/
+
+---
+
+background-image: url(img/http2inoneslide.png)
+# HTTP/2
+
+
+
+---
+
 
 # HTTP/2
    
@@ -518,6 +530,7 @@ enum Foo {
 - приоритизация запросов
 - безопасность
 
+https://medium.com/@factoryhr/http-2-the-difference-between-http-1-1-benefits-and-how-to-use-it-38094fa0e95b
 
 ---
 
