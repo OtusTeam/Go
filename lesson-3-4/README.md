@@ -777,6 +777,12 @@ https://github.com/ktr0731/evans
 https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html
 https://medium.com/@gustavoh/building-microservices-in-go-and-python-using-grpc-and-tls-ssl-authentication-cfcee7c2b052
 
+---
+
+# clay
+
+https://github.com/utrack/clay
+
 
 ---
 
