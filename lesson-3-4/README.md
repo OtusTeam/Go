@@ -56,6 +56,151 @@ background-size: 130%
 
 ---
 
+# Что такое gRPC
+
+
+<br><br>
+
+RPC: (SOAP, Sun RPC, DCOM etc.)
+- сетевые вызовы абстрагированы от кода
+- интерфейсы как сигнатуры функций (Interface Definition Language для language-agnostic)
+- тулзы для кодогенерации
+- кастомные протоколы
+
+```
+      try {
+         XmlRpcClient client = new XmlRpcClient("http://localhost/RPC2"); 
+         Vector params = new Vector();
+         
+         params.addElement(new Integer(17));
+         params.addElement(new Integer(13));
+
+         Object result = server.execute("sample.sum", params);
+
+         int sum = ((Integer) result).intValue();
+
+      } catch (Exception exception) {
+         System.err.println("JavaClient: " + exception);
+      }
+ 
+```
+
+<br>
+
+g:<br>
+https://github.com/grpc/grpc/blob/master/doc/g_stands_for.md
+
+---
+
+# Что такое gRPC
+
+```
+// The greeter service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}
+```
+
+---
+
+class: black
+background-size: 75%
+background-image: url(img/grpcclassics.svg)
+# Что такое gRPC
+
+
+---
+
+# gRPC vs REST
+
+<!--class: black
+background-image: url(img/grpcvsrest.png)
+-->
+.image[
+![](img/grpcvsrest.png)
+]
+
+---
+
+# HTTP/2 vs HTTP
+
+https://imagekit.io/demo/http2-vs-http1
+https://developers.google.com/web/fundamentals/performance/http2/
+
+---
+
+class: black
+background-size: 75%
+background-image: url(img/headercompression.png)
+# HTTP/2 vs HTTP: header compression
+
+
+---
+
+class: black
+background-size: 75%
+background-image: url(img/http2multiplexing.png)
+# HTTP/2 vs HTTP: multiplexing
+
+---
+
+class: black
+background-size: 75%
+background-image: url(img/http2-server-push.png)
+# HTTP/2 vs HTTP: server push
+
+
+---
+
+# HTTP/2 vs HTTP
+   
+- бинарный вместо текстового
+- мультиплексирование — передача нескольких асинхронных HTTP-запросов по одному TCP-соединению
+- сжатие заголовков методом HPACK
+- Server Push — несколько ответов на один запрос
+- приоритизация запросов (https://habr.com/ru/post/452020/)
+- безопасность
+
+https://medium.com/@factoryhr/http-2-the-difference-between-http-1-1-benefits-and-how-to-use-it-38094fa0e95b
+
+
+---
+
+
+background-image: url(img/http2inoneslide.png)
+# HTTP/2
+
+
+
+---
+
+class: black
+background-size: 75%
+background-image: url(img/proto3message.png)
+# Protocol buffers: краткое содержание предыдущих серий
+
+
+---
+
+class: black
+background-size: 75%
+background-image: url(img/encodedecode.png)
+# Protocol buffers: краткое содержание предыдущих серий
+
+---
+
+
 # Protocol buffers: типы данных 
 
 скаляры:
@@ -71,13 +216,10 @@ background-size: 130%
 
 ---
 
-# Protocol buffers: wire types
-
 class: black
-background-image: url(img/tcp-udp-otlichiya-5.png)
-
-
-
+background-size: 75%
+background-image: url(img/wiretype.png)
+# Protocol buffers: wire types
 
 
 ---
@@ -87,8 +229,6 @@ background-image: url(img/tcp-udp-otlichiya-5.png)
 - 1 - 2^29 (536,870,911)
 - 19000 - 19999 зарезервированы для  имплементации Protocol Buffers
 - 1-15 занимают 1 байт, используем для часто используемых полей
-
-- reserved tags (TODO)
 
 ---
 
@@ -137,8 +277,9 @@ message Result {
 - number (int32/64 etc.): 0
 - bytes: пустой массив
 - enum: первое значение
-- repeated: пустой массив
-
+- repeated: пустой массивФ
+- Message - зависит от языка (https://developers.google.com/protocol-buffers/docs/reference/go-generated#singular-message)
+в го- nil
 
 ---
 
@@ -281,16 +422,6 @@ message Person {
 
 ---
 
-# Protocol buffers: protoc и генерация кода
-
-```
-protoc  --java_out=java --python_out=python *.proto
-```
-
-# TODO
-
----
-
 # Protocol buffers: go_package
 
 <br><br>
@@ -321,12 +452,82 @@ import fmt "fmt"
 import math "math"
 ```
 
+---
+
+# Protocol buffers: oneof, map
+
+oneof - только одно поле из списка может иметь значение
+и не может быть repeated
+
+```
+message Message {
+    int32 id = 1;
+    oneof auth {
+        string mobile = 2;
+        string email = 3;
+        int32 userid = 4;
+    }
+}
+```
+
+map: - асс. массив, ключи - скаляры (кроме float/double) значения - любые типы, не может быть repeated
+
+```
+message Result {
+    string result = 1;
+}
+
+message SearchResponse {
+    map<string, Result> results = 1;
+}
+```
+
+---
+
+# Protocol buffers: Well Known Types
+
+https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+
+```
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+
+message MyMessage {
+    google.protobuf.Timestamp last_online = 1;
+    google.protobuf.Duration session_length = 2;
+}
+```
+
+
 
 
 ---
 
 # Protocol buffers: запись на диск, JSON
 
+```
+	course := &myotus.Course{
+		Title:   "Golang",
+		Teacher: []*myotus.Teacher{{Name: "Dmitry Smal", Id: 1}, {Name: "Alexander Davydov", Id: 2}},
+	}
+	out, err := proto.Marshal(course)
+```
+
+````
+	import "github.com/gogo/protobuf/jsonpb"
+
+	marshaler := jsonpb.Marshaler{}
+	res, err := marshaler.MarshalToString(course)
+	print(res)
+```
+
+```
+{"title":"Golang","teacher":[{"name":"Dmitry Smal","id":1},
+							 {"name":"Alexander Davydov","id":2}]}
+```
 
 ---
 
@@ -429,56 +630,6 @@ enum DayOfWeek {
 
 ---
 
-# Protocol buffers: oneof, map
-
-oneof - только одно поле из списка может иметь значение
-и не может быть repeated
-
-```
-message Message {
-    int32 id = 1;
-    oneof auth {
-        string mobile = 2;
-        string email = 3;
-        int32 userid = 4;
-    }
-}
-```
-
-map: - асс. массив, ключи - скаляры (кроме float/double) значения - любые типы, не может быть repeated
-
-```
-message Result {
-    string result = 1;
-}
-
-message SearchResponse {
-    map<string, Result> results = 1;
-}
-```
-
----
-
-# Protocol buffers: Well Known Types
-
-https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
-
-```
-syntax = "proto3";
-
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/duration.proto";
-
-
-message MyMessage {
-    google.protobuf.Timestamp last_online = 1;
-    google.protobuf.Duration session_length = 2;
-}
-```
-
-
----
-
 # Protocol buffers: style guide
 <br>
 
@@ -506,79 +657,29 @@ enum Foo {
 
 ---
 
-# HTTP/2 vs HTTP
-
-https://imagekit.io/demo/http2-vs-http1
-https://developers.google.com/web/fundamentals/performance/http2/
-
----
-
-background-image: url(img/http2inoneslide.png)
-# HTTP/2
-
-
-
----
-
-
-# HTTP/2
-   
-- бинарный вместо текстового
-- мультиплексирование — передача нескольких асинхронных HTTP-запросов по одному TCP-соединению
-- сжатие заголовков методом HPACK
-- Server Push — несколько ответов на один запрос
-- приоритизация запросов
-- безопасность
-
-https://medium.com/@factoryhr/http-2-the-difference-between-http-1-1-benefits-and-how-to-use-it-38094fa0e95b
-
----
-
-# RPC
-
-- сетевые вызовы абстрагированы от кода
-- интерфейсы как сигнатуры функций (Interface Definition Language для language-agnostic)
-- тулзы для кодогенерации
-- зачастую используют кастомные протоколы
-
-
----
-
-# Что такое gRPC
-
-https://github.com/grpc/grpc/blob/master/doc/g_stands_for.md
-
----
-
-# gRPC vs REST
-
-<!--class: black
-background-image: url(img/grpcvsrest.png)
--->
-.image[
-![](img/grpcvsrest.png)
-]
-
-
-
----
-
 class: black
 background-size: 75%
 background-image: url(img/grpcapitypes.png)
-
-
 # Типы gRPC API
 
 
-<!--.image[
-![](img/grpcapitypes.png)
-]-->
+---
 
-class: top white
-background-image: url(tmp/sound.svg)
-background-size: 130%
-.top.icon[![otus main](https://drive.google.com/uc?id=18Jw9bQvL3KHfhGWNjqyQ3ihR3fV3tmk8)]
+
+# Protocol buffers: protoc и генерация кода
+
+go get -u github.com/golang/protobuf/protoc-gen-go
+go get -u google.golang.org/grpc
+
+
+```
+protoc  --java_out=java --python_out=python *.proto
+```
+
+# TODO
+
+---
+
 
 
 ---
@@ -639,6 +740,17 @@ func (*server) SquareRoot(ctx context.Context, req *calculatorpb.SquareRootReque
 
 # gRPC: Deadlines
 
+```
+clientDeadline := time.Now().Add(time.Duration(*deadlineMs) * time.Millisecond)
+ctx, cancel := context.WithDeadline(ctx, clientDeadline)
+```
+
+```
+if ctx.Err() == context.Canceled {
+	return status.New(codes.Canceled, "Client cancelled, abandoning.")
+}
+```
+
 ---
 
 # gRPC: Reflection + Evans CLI
@@ -664,13 +776,6 @@ https://github.com/ktr0731/evans
 
 https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html
 https://medium.com/@gustavoh/building-microservices-in-go-and-python-using-grpc-and-tls-ssl-authentication-cfcee7c2b052
-
----
-
-# Итого: почему gRPC
-
-class: black
-background-image: url(img/tcp-udp-otlichiya-5.png)
 
 
 ---
@@ -704,7 +809,7 @@ https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 - Entities (models, модели)
 - Use Cases (controllers, сценарии)
-- Interface Adapters ()
+- Interface Adapters
 - Frameworks and Drivers (инфраструктура)
 
 ---
@@ -731,12 +836,9 @@ https://forms.gle/SiDmYTPUU5La3rA88
 
 # На занятии
 
-- Изучили что такое контекст
-- Изучили особенности протоколов TCP и UDP
-- Изучили стандартные типы Conn и Dialer
-- Узнали о типичных сетевых проблемах
-- Научились обеспечивать тайм-ауты
-- Научились отлаживать сетевые проблемы
+- Научились писать gRPC сервисы
+- Научились писать Protobuf схемы
+- Изучили принципы Clean Architecture
 
 ---
 
