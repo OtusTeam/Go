@@ -467,7 +467,7 @@ func (h *MyHandler) Search(resp ResponseWriter, req *Request) {
   // ...
 }
 
-func (s *server) withTimeout(h http.HandlerFunc, timeout time.Duration) http.HandlerFunc {
+func withTimeout(h http.HandlerFunc, timeout time.Duration) http.HandlerFunc {
   return func(resp http.ResponseWriter, req *http.Request) {
     // берем контекст запроса и ограничиваем его таймаутом
     ctx := context.WithTimeout(req.Context(), timeout)
@@ -493,7 +493,7 @@ func (h *MyHandler) AddItem(resp ResponseWriter, req *Request) {
   // ...
 }
 
-func (s *server) authorize(h http.HandlerFunc, timeout time.Duration) http.HandlerFunc {
+func authorize(h http.HandlerFunc, timeout time.Duration) http.HandlerFunc {
   return func(resp http.ResponseWriter, req *http.Request) {
     // выполняем авторизацию пользователя
     user, err := DoAuthorizeUser(req)
