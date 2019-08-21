@@ -814,7 +814,7 @@ func (s *otusServer) SubmitAllHomeworks(stream homeworkpb.HomeworkChecker_Submit
 			return stream.SendAndClose(&homeworkpb.SubmitAllHomeworksResponse{Accepted: true})
 		}
 		if err != nil {
-			log.Fatalf("error reading client stream: %v", err)
+			return err
 		}
 		_ = req
 	}
@@ -874,10 +874,53 @@ func (s *otusServer) RealtimeFeedback(stream homeworkpb.HomeworkChecker_Realtime
 # Boilerplate bi-directional streaming client
 
 ```
+	bstream, err := c.RealtimeFeedback(context.Background())
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
 
----
+	brequests := []*homeworkpb.CheckHomeworkRequest{
+		&homeworkpb.CheckHomeworkRequest{
+			Hw:   12,
+			Code: "some code",
+		},
+		&homeworkpb.CheckHomeworkRequest{
+			Hw:   13,
+			Code: "other code",
+		},
+	}
 
-# Scalability
+	waitc := make(chan struct{})
+	// we send a bunch of messages to the client (go routine)
+	go func() {
+		// function to send a bunch of messages
+		for _, req := range brequests {
+			fmt.Printf("Sending message: %v\n", req)
+			bstream.Send(req)
+			time.Sleep(1000 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+	// we receive a bunch of messages from the client (go routine)
+	go func() {
+		// function to receive a bunch of messages
+		for {
+			res, err := bstream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Error while receiving: %v", err)
+				break
+			}
+			fmt.Printf("Received: %v\n", res.GetGrade())
+		}
+		close(waitc)
+	}()
+
+	// block until everything is done
+	<-waitc
+```
 
 ---
 
@@ -922,7 +965,6 @@ func (*server) SquareRoot(ctx context.Context, req *calculatorpb.SquareRootReque
 				return
 			}
 		} else {
-			log.Fatalf("Big Error calling SquareRoot: %v", err)
 			return
 		}
 	}
