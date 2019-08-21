@@ -47,10 +47,12 @@ background-size: 130%
 # План занятия
 
 .big-list[
+* Что такое gRPC и HTTP/2
+* Всоминаем Protocol buffers
+* Прямая и обратная совместимость в Protocol buffers
 * Описание API с помощью Protobuf
 * Генерация кода для GRPC клиента и сервера
 * Реализация API
-* Прямая и обратная совместимость API
 * Представление о Clean Architecture
 ]
 
@@ -61,7 +63,7 @@ background-size: 130%
 
 <br><br>
 
-RPC: (SOAP, Sun RPC, DCOM etc.)
+RPC: (CORBA, Sun RPC, DCOM etc.)
 - сетевые вызовы абстрагированы от кода
 - интерфейсы как сигнатуры функций (Interface Definition Language для language-agnostic)
 - тулзы для кодогенерации
@@ -122,6 +124,14 @@ background-image: url(img/grpcclassics.svg)
 
 ---
 
+# gRPC: где использовать
+
+- микросервисы
+- клиент-сервер
+- интеграции / API
+
+---
+
 # gRPC vs REST
 
 <!--class: black
@@ -170,7 +180,6 @@ background-image: url(img/http2-server-push.png)
 - сжатие заголовков методом HPACK
 - Server Push — несколько ответов на один запрос
 - приоритизация запросов (https://habr.com/ru/post/452020/)
-- безопасность
 
 https://medium.com/@factoryhr/http-2-the-difference-between-http-1-1-benefits-and-how-to-use-it-38094fa0e95b
 
@@ -330,11 +339,6 @@ message Date {
     int32 day = 3;
 }
 ```
-
-
----
-
-# Protocol buffers: вложенные сообщения
 
 ```
 message Person {
@@ -665,22 +669,211 @@ background-image: url(img/grpcapitypes.png)
 
 ---
 
-
-# Protocol buffers: protoc и генерация кода
-
-go get -u github.com/golang/protobuf/protoc-gen-go
-go get -u google.golang.org/grpc
-
+# Unary boilerplate
 
 ```
+syntax = "proto3";
+
+package homework;
+
+option go_package = "homeworkpb";
+
+
+service HomeworkChecker {
+    rpc CheckHomework (CheckHomeworkRequest) returns (CheckHomeworkResponse) {};
+}
+
+message CheckHomeworkRequest {
+    int32 hw = 1;
+    string code = 2;
+}
+
+message CheckHomeworkResponse {
+    int32 grade = 1;
+}
+
+```
+
+```
+go get -u github.com/golang/protobuf/protoc-gen-go
+protoc proto/homework.proto --go_out=plugins=grpc:.
 protoc  --java_out=java --python_out=python *.proto
 ```
 
-# TODO
+---
+
+# Boilerplate unary server (импорты убрал для краткости)
+
+```
+package main
+
+import (
+	"otus-examples/otusrpc/homeworkpb"
+
+	"google.golang.org/grpc"
+)
+
+type otusServer struct {
+}
+
+func (s *otusServer) CheckHomework(ctx context.Context, req *homeworkpb.CheckHomeworkRequest) (*homeworkpb.CheckHomeworkResponse, error) {
+	return nil, nil
+}
+
+func main() {
+	lis, err := net.Listen("tcp", "0.0.0.0:50051")
+	if err != nil {
+		log.Fatalf("failed to listen %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+
+	homeworkpb.RegisterHomeworkCheckerServer(grpcServer, &otusServer{})
+	grpcServer.Serve(lis)
+}
+```
 
 ---
 
+# Boilerplate unary client (импорты убрал для краткости)
 
+```
+package main
+
+import (
+	"context"
+	"log"
+	"otus-examples/otusrpc/homeworkpb"
+
+	"google.golang.org/grpc"
+)
+
+func main() {
+
+	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+	defer cc.Close()
+
+	c := homeworkpb.NewHomeworkCheckerClient(cc)
+	grade, err := c.CheckHomework(context.Background(), &homeworkpb.CheckHomeworkRequest{Hw: 10, Code: "{some code}"})
+	if err != nil {
+		log.Fatalf("err getting grade: %v", err)
+	}
+	println(grade.Grade)
+}
+```
+
+---
+
+# Boilerplate server streaming (server)
+
+```
+func (s *otusServer) CheckAllHomeworks(req *homeworkpb.CheckAllHomeworksRequest, stream homeworkpb.HomeworkChecker_CheckAllHomeworksServer) error {
+	for _, hw := range req.Hw {
+		res := &homeworkpb.CheckHomeworkResponse{Hw: hw, Grade: 67}
+		stream.Send(res)
+		time.Sleep(time.Second)
+	}
+
+	return nil
+}
+```
+
+---
+
+# Boilerplate server streaming (client)
+
+```
+	stream, err := c.CheckAllHomeworks(context.Background(), &homeworkpb.CheckAllHomeworksRequest{Hw: []int32{1, 2, 3, 4, 5}})
+	if err != nil {
+		log.Fatalf("CheckAllHomeworks err %v", err)
+	}
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("error reading stream: %v", err)
+		}
+		print(msg.Grade)
+	}
+```
+
+---
+
+# Boilerplate client streaming (server)
+
+```
+func (s *otusServer) SubmitAllHomeworks(stream homeworkpb.HomeworkChecker_SubmitAllHomeworksServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&homeworkpb.SubmitAllHomeworksResponse{Accepted: true})
+		}
+		if err != nil {
+			log.Fatalf("error reading client stream: %v", err)
+		}
+		_ = req
+	}
+}
+```
+
+---
+
+# Boilerplate client streaming (client)
+
+```
+	requests := []*homeworkpb.SubmitAllHomeworksRequest{
+		&homeworkpb.SubmitAllHomeworksRequest{Hw: 1, Code: "first"},
+		&homeworkpb.SubmitAllHomeworksRequest{Hw: 2, Code: "second"},
+	}
+	cstream, err := c.SubmitAllHomeworks(context.Background())
+	if err != nil {
+		log.Fatalf("err streaming: %v", err)
+	}
+	for _, req := range requests {
+		cstream.Send(req)
+	}
+
+	res, err := cstream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("err getting resp: %v", err)
+	}
+	println(res.GetAccepted())
+```
+
+--- 
+
+# Boilerplate bi-directional streaming server
+
+```
+func (s *otusServer) RealtimeFeedback(stream homeworkpb.HomeworkChecker_RealtimeFeedbackServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("error reading client stream: %v", err)
+			return err
+		}
+		_ = req
+		sendErr := stream.Send(&homeworkpb.CheckHomeworkResponse{Hw: 1, Grade: 5})
+		if sendErr != nil {
+			return err
+		}
+	}
+}
+```
+
+--- 
+
+# Boilerplate bi-directional streaming client
+
+```
 
 ---
 
