@@ -97,21 +97,51 @@ https://github.com/grpc/grpc/blob/master/doc/g_stands_for.md
 # Что такое gRPC
 
 ```
-// The greeter service definition.
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
+syntax = "proto3";
+
+service Google {
+  // Search returns a Google search result for the query.
+  rpc Search(Request) returns (Result) {
+  }
 }
 
-// The request message containing the user's name.
-message HelloRequest {
-  string name = 1;
+message Request {
+  string query = 1;
 }
 
-// The response message containing the greetings
-message HelloReply {
-  string message = 1;
+message Result {
+  string title = 1;
+  string url = 2;
+  string snippet = 3;
 }
+```
+
+---
+
+# Что такое gRPC
+
+```
+protoc ./search.proto --go_out=plugins=grpc:.
+```
+
+```
+type GoogleClient interface {
+    // Search returns a Google search result for the query.
+    Search(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Result, error)
+}
+type GoogleServer interface {
+    // Search returns a Google search result for the query.
+    Search(context.Context, *Request) (*Result, error)
+}
+type Request struct {
+    Query string `protobuf:"bytes,1,opt,name=query" json:"query,omitempty"`
+}
+type Result struct {
+    Title   string `protobuf:"bytes,1,opt,name=title" json:"title,omitempty"`
+    Url     string `protobuf:"bytes,2,opt,name=url" json:"url,omitempty"`
+    Snippet string `protobuf:"bytes,3,opt,name=snippet" json:"snippet,omitempty"`
+}
+
 ```
 
 ---
@@ -222,6 +252,8 @@ background-image: url(img/encodedecode.png)
 - int{32,64} (отрицательные значения - 10 байт)
 - uint{32,64}
 - sint{32,64} (ZigZag для отрицательных значений)
+
+https://developers.google.com/protocol-buffers/docs/encoding
 
 ---
 
@@ -538,8 +570,6 @@ message MyMessage {
 class: black
 background-size: 75%
 background-image: url(img/backwardforward.png)
-
-
 # Protocol buffers: прямая/обратная совместимость
 
 
@@ -551,7 +581,8 @@ background-image: url(img/backwardforward.png)
 - старый код будет игнорировать новые поля
 - при неизвестных полях испольуются дефолтные значения (TODO!)
 - поля можно удалять, но не переиспользовать тег / добавить префик OBSOLETE_ / сделать поле reserved
-- правила изменения типов: https://developers.google.com/protocol-buffers/docs/proto#updating
+
+https://developers.google.com/protocol-buffers/docs/proto#updating
 
 ---
 
@@ -1014,7 +1045,7 @@ https://medium.com/@gustavoh/building-microservices-in-go-and-python-using-grpc-
 
 ---
 
-# clay
+# gRPC + REST: clay
 
 https://github.com/utrack/clay
 
