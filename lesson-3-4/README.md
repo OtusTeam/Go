@@ -552,7 +552,7 @@ message MyMessage {
 	out, err := proto.Marshal(course)
 ```
 
-````
+```
 	import "github.com/gogo/protobuf/jsonpb"
 
 	marshaler := jsonpb.Marshaler{}
