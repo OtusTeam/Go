@@ -23,7 +23,7 @@ background-size: 130%
   # Как меня слышно и видно?
 ]
 
-.sound-bott om[
+.sound-bottom[
   ## > Напишите в чат
   ### **+** если все хорошо
   ### **–** если есть проблемы cо звуком или с видео
@@ -160,6 +160,15 @@ background-image: url(img/grpcclassics.svg)
 - клиент-сервер
 - интеграции / API
 
+
+- Apcera/Kurma: container OS
+- Bazil: distributed file system
+- CoreOS/Etcd: distributed consistent key-value store
+- Google Cloud Bigtable: sparse table storage
+- Monetas/Bitmessage: transaction platform
+- Pachyderm: containerized data analytics
+- YouTube/Vitess: storage platform for scaling MySQL
+
 ---
 
 # gRPC vs REST
@@ -203,6 +212,14 @@ background-image: url(img/http2-server-push.png)
 
 ---
 
+background-image: url(img/http2inoneslide.png)
+# HTTP/2
+
+
+
+---
+
+
 # HTTP/2 vs HTTP
    
 - бинарный вместо текстового
@@ -216,13 +233,6 @@ https://medium.com/@factoryhr/http-2-the-difference-between-http-1-1-benefits-an
 
 ---
 
-
-background-image: url(img/http2inoneslide.png)
-# HTTP/2
-
-
-
----
 
 class: black
 background-size: 75%
@@ -348,12 +358,6 @@ const (
     EyeColor_EYE_BLUE          EyeColor = 2                                     
 ) 
 ```
----
-
-# Protocol buffers: упражнение
-
-
-
 
 ---
 
@@ -451,10 +455,13 @@ message Person {
 }
 ```
 
-
 ---
 
 # Protocol buffers: упражнение
+
+
+Написать person.proto: имя, фамилия, адрес, рост, вес, возраст
+
 
 ---
 
