@@ -1,0 +1,17 @@
+asn1crypto==0.24.0
+cffi==1.11.5
+cryptography==2.2.2
+Django==1.11.13
+enum34==1.1.6
+idna==2.7
+ipaddress==1.0.22
+ndg-httpsclient==0.5.0
+protobuf==3.7.1
+pyasn1==0.4.3
+pycparser==2.18
+pyOpenSSL==18.0.0
+pytz==2018.4
+six==1.11.0
+urllib3==1.23
+virtualenv==16.0.0
+xlrd==1.1.0
