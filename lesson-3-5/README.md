@@ -24,7 +24,7 @@ class: white
 background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
-# Работа с реляционными базами данных
+# Работа с SQL
 
 ### Дмитрий Смаль
 
