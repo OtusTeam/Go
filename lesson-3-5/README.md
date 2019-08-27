@@ -267,12 +267,12 @@ if err != nil {
 defer rows.Close()
 
 for rows.Next() {
-	var id int64
+  var id int64
   var title, descr string
-	if err := rows.Scan(&id, &title, &descr); err != nil {
+  if err := rows.Scan(&id, &title, &descr); err != nil {
     // ошибка сканирования
-	}
-	// обрабатываем строку
+  }
+  // обрабатываем строку
   fmt.Printf("%d %s %s\n", id, title, descr)
 }
 if err := rows.Err(); err != nil {
@@ -365,9 +365,9 @@ conn, err := db.Conn(ctx)  // *sql.Conn
 defer conn.Close()
 
 // далее - обычная работа как с *sql.DB
-err := tx.ExecContext(ctx, query1, arg1, arg2)
+err := conn.ExecContext(ctx, query1, arg1, arg2)
 
-rows, err := tx.QueryContext(ctx, query2, arg1, arg2)
+rows, err := conn.QueryContext(ctx, query2, arg1, arg2)
 ```
 
 ---
@@ -498,7 +498,7 @@ db.QueryRowContext(ctx, "select * from user order by $1 limit 3", order)
 ```
 import "github.com/jmoiron/sqlx"
 
-db, err := sql.Open("pgx", dsn)  // *sqlx.DB
+db, err := sqlx.Open("pgx", dsn)  // *sqlx.DB
 
 rows, err := db.QueryContext("select * from events") // *sqlx.Rows
 
@@ -592,9 +592,9 @@ for rows.Next() {
 # Ссылки
 
 .big-list[
-*[http://go-database-sql.org/index.html](http://go-database-sql.org/index.html)
-*[https://golang.org/pkg/database/sql](https://golang.org/pkg/database/sql)
-*[https://jmoiron.github.io/sqlx](https://jmoiron.github.io/sqlx)
+* [http://go-database-sql.org/index.html](http://go-database-sql.org/index.html)
+* [https://golang.org/pkg/database/sql](https://golang.org/pkg/database/sql)
+* [https://jmoiron.github.io/sqlx](https://jmoiron.github.io/sqlx)
 ]
 ---
 
