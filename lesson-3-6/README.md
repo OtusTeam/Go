@@ -579,7 +579,7 @@ import (
 
 // создаем клиент
 dsn := "mongodb://user1:pass1@localhost:27017"
-options := options.Client().ApplyURI(uri)
+options := options.Client().ApplyURI(dsn)
 client, err := mongo.NewClient(options)
 if err != nil {
 	// ...
