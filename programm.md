@@ -160,7 +160,7 @@ function LogOtusEvent(e OtusEvent, w io.Writer) {
 * Подробнее про GOROOT и GOPATH
 * Сборка модулей и установка программ: go build, go install
 * Модули и зависимости: dep и vgo
-* Форматирование кода: go fmt, fix
+* Форматирование кода: go fmt, imports
 * Линтеры: go vet, golint, металинтеры
 
 *Домашнее задание*
