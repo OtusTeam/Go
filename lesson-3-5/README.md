@@ -150,7 +150,7 @@ ResultSet:
 
 ```
 import "database/sql"
-import _ "github.com/jackc/pgx"
+import _ "github.com/jackc/pgx/stdlib"
 
 dns := "..."
 db, err := sql.Open("pgx", dsn)  // *sql.DB
