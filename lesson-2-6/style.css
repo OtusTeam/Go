@@ -3,6 +3,7 @@
 @page {
   size: 1210px 900px;
   margin: 0;
+  line-height: 1.5em;
 }
 
 @media print {
@@ -58,6 +59,10 @@ h2 {
 .big-list li {
   font-size: 24px !important;
   line-height: 2em;
+}
+
+li {
+  line-height: 1.5em;
 }
 
 li li {
