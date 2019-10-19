@@ -3,7 +3,6 @@
 @page {
   size: 1210px 900px;
   margin: 0;
-  line-height: 1.5em;
 }
 
 @media print {
