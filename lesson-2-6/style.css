@@ -60,6 +60,10 @@ h2 {
   line-height: 2em;
 }
 
+li {
+  line-height: 1.5em;
+}
+
 li li {
   line-height: 1.5em;
 }
