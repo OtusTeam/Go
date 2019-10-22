@@ -180,6 +180,8 @@ getComet();
 
 # Comet на сервере
 
+Используем [https://www.nginx.com/resources/wiki/modules/push_stream/](https://www.nginx.com/resources/wiki/modules/push_stream/)
+
 ```
 location /publish/ {
     push_stream_publisher normal;       # включаем отправку
