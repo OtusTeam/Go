@@ -24,7 +24,7 @@ class: white
 background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
-# Real-Time messages
+# Real-Time сообщения
 
 ### Дмитрий Смаль
 
@@ -50,14 +50,6 @@ background-image: url(img/message.svg)
 * Прямые трансляции (a-la twitter)
 * Push уведомления
 * Сетевой обмен в играх на HTML
-]
-
----
-
-# Архитектура
-
-.main-image[
-![img/arch.png](img/arch.png)
 ]
 
 ---
@@ -91,11 +83,11 @@ setInterval(function() {
         url:  '/messages/',
         data: { cid: 5, since: since },
     }).success(function(resp) {
-        if (!resp.messages || !resp.messages.length) {
+        if (!resp || !resp.length) {
             return;
         }
-        handleMessages(resp.messages);
-        since = resp.messages[0].id;
+        handleMessages(resp);
+        since = resp[0].Id;
     });
 }, 5000);
 ```
@@ -109,16 +101,16 @@ func pollHandler(w http.ResponseWriter, r *http.Request) {
     cid := r.URL.Query().Get("cid")
     since := r.URL.Query().Get("since")
     
-    type Message struct{Cid string; Text string; Ts time.Time}
+    type Message struct{Id string; Cid string; Text string}
     var messages []Message
     
     db := getDb()
-    rows, _ := db.Query("select from messages " +
-     "where cid = :1 and since >= :2", cid, since)
+    rows, _ := db.Query("select id, cid, text from messages " +
+     " where cid = ? and id > ?", cid, since)
     defer rows.Close()
     for rows.Next() {
         var msg Message
-        _ = rows.Scan(&msg.Cid, &msg.Text, &msg.Ts)
+        _ = rows.Scan(&msg.Id, &msg.Cid, &msg.Text)
         messages = append(messages, msg)
     }
     
@@ -159,7 +151,7 @@ function getComet() {
         url:  '/listen/',
         data: { cid: 5 },
     }).success(function(resp) {
-        handleMessages(resp.messages);
+        handleMessages(resp);
         getComet();
     }).error(function() {
         setTimeout(getComet, 10000);
@@ -175,6 +167,14 @@ getComet();
 причем каждое соединение находится в ожидании сообщений для него. По этой причине мы не можем использовать
 классический application-сервер в роли comet-сервера. Для comet-сервера необходима отдельная технология,
 например [https://github.com/wandenberg/nginx-push-stream-module](nginx + push-stream-module).
+
+---
+
+# Архитектура
+
+.main-image[
+![img/arch.png](img/arch.png)
+]
 
 ---
 
@@ -370,7 +370,7 @@ puburl = 'http://127.0.0.1/publish/'
 def send_message(request):
     cid = request.GET.get('to')
     text = request.GET.get('text')
-    body = json.dumps({ 'messages': [ text ] })
+    body = json.dumps({ 'message': text })
     try: ## может быть долгим
         resp = requests.post(puburl, params={'cid':cid}, data=body)
         if resp.status_code == 200:
