@@ -49,7 +49,7 @@ White/black листы содержат списки адресов сетей, 
 ### Добавление IP в blacklist
 * subnet (ip + mask)
 
-### Удаление IP из whitelist
+### Удаление IP из blacklist
 * subnet (ip + mask)
 
 ### Добавление IP в whitelist
