@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/otusteam/go/cleancalendar/internal/domain/errors"
-	"github.com/otusteam/go/cleancalendar/internal/domain/services"
+	"github.com/otusteam/go/cleancalendar/internal/domain/usecases"
 )
 
 type CalendarServer struct {
-	EventService *services.EventService
+	EventUsecases *usecases.EventUsecases
 }
 
 // implements CalendarServiceServer
@@ -40,7 +40,7 @@ func (cs *CalendarServer) CreateEvent(ctx context.Context, req *CreateEventReque
 		endTime = &et
 	}
 
-	event, err := cs.EventService.CreateEvent(ctx, owner, req.GetTitle(), req.GetText(), startTime, endTime)
+	event, err := cs.EventUsecases.CreateEvent(ctx, owner, req.GetTitle(), req.GetText(), startTime, endTime)
 	if err != nil {
 		if berr, ok := err.(errors.EventError); ok {
 			resp := &CreateEventResponse{

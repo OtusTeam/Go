@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/otusteam/go/cleancalendar/internal/grpc/api"
+	"github.com/otusteam/go/cleancalendar/internal/adapters/grpc/api"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"log"

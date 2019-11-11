@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/otusteam/go/cleancalendar/internal/domain/models"
+	"github.com/otusteam/go/cleancalendar/internal/domain/entities"
 	"time"
 )
 
@@ -25,7 +25,7 @@ func NewPgEventStorage(dsn string) (*PgEventStorage, error) {
 	return &PgEventStorage{db: db}, nil
 }
 
-func (pges *PgEventStorage) SaveEvent(ctx context.Context, event *models.Event) error {
+func (pges *PgEventStorage) SaveEvent(ctx context.Context, event *entities.Event) error {
 	query := `
 		INSERT INTO events(id, owner, title, text, start_time, end_time)
 		VALUES (:id, :owner, :title, :text, :start_time, :end_time)
@@ -41,12 +41,12 @@ func (pges *PgEventStorage) SaveEvent(ctx context.Context, event *models.Event) 
 	return err
 }
 
-func (pges *PgEventStorage) GetEventById(ctx context.Context, id string) (*models.Event, error) {
+func (pges *PgEventStorage) GetEventById(ctx context.Context, id string) (*entities.Event, error) {
 	// TODO
 	return nil, nil
 }
 
-func (pges *PgEventStorage) GetEventsByOwnerStartDate(ctx context.Context, owner string, startTime time.Time) []*models.Event {
+func (pges *PgEventStorage) GetEventsByOwnerStartDate(ctx context.Context, owner string, startTime time.Time) []*entities.Event {
 	// TODO
 	return nil
 }

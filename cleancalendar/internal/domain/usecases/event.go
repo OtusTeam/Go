@@ -1,20 +1,20 @@
-package services
+package usecases
 
 import (
 	"context"
+	"github.com/otusteam/go/cleancalendar/internal/domain/entities"
 	"github.com/otusteam/go/cleancalendar/internal/domain/interfaces"
-	"github.com/otusteam/go/cleancalendar/internal/domain/models"
 	"github.com/satori/go.uuid"
 	"time"
 )
 
-type EventService struct {
+type EventUsecases struct {
 	EventStorage interfaces.EventStorage
 }
 
-func (es *EventService) CreateEvent(ctx context.Context, owner, title, text string, startTime *time.Time, endTime *time.Time) (*models.Event, error) {
+func (es *EventUsecases) CreateEvent(ctx context.Context, owner, title, text string, startTime *time.Time, endTime *time.Time) (*entities.Event, error) {
 	// TODO: persistence, validation
-	event := &models.Event{
+	event := &entities.Event{
 		Id:        uuid.NewV4(),
 		Owner:     owner,
 		Title:     title,

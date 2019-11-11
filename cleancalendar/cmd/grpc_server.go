@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/otusteam/go/cleancalendar/internal/domain/services"
-	"github.com/otusteam/go/cleancalendar/internal/grpc/api"
-	"github.com/otusteam/go/cleancalendar/internal/maindb"
+	"github.com/otusteam/go/cleancalendar/internal/adapters/grpc/api"
+	"github.com/otusteam/go/cleancalendar/internal/adapters/maindb"
+	"github.com/otusteam/go/cleancalendar/internal/domain/usecases"
 	"github.com/spf13/cobra"
 	"log"
 )
@@ -14,11 +14,11 @@ func construct(dsn string) (*api.CalendarServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	eventService := &services.EventService{
+	eventService := &usecases.EventUsecases{
 		EventStorage: eventStorage,
 	}
 	server := &api.CalendarServer{
-		EventService: eventService,
+		EventUsecases: eventService,
 	}
 	return server, nil
 }
