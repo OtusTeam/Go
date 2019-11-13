@@ -108,6 +108,36 @@ background-image: url(img/message.svg)
   
 ---
 
+# Go Standard Layout
+
+[https://github.com/golang-standards/project-layout](https://github.com/golang-standards/project-layout)
+
+```
+.
+├── Makefile
+├── api
+├── assets
+├── build
+├── cmd
+├── configs
+├── deployments
+├── docs
+├── examples
+├── githooks
+├── init
+├── internal
+├── pkg
+├── scripts
+├── test
+├── third_party
+├── tools
+├── vendor
+├── web
+└── website
+```
+
+---
+
 # Точки роста
 
 .big-list[
