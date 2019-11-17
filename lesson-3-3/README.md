@@ -26,7 +26,7 @@ background-image: url(img/message.svg)
 
 # Протокол HTTP
 
-### Дмитрий Смаль
+### Дмитрий Смаль, Елена Граховац
 
 ---
 
@@ -38,7 +38,7 @@ background-image: url(img/message.svg)
 * Создание простого HTTP сервера
 * Декораторы и middleware
 * HTTP/1.1 и HTTP/2.0
-* REST и RPC
+* REST, GraphQL, RPC
 * Swagger
 ]
 
@@ -51,7 +51,7 @@ background-image: url(img/message.svg)
 ]
 
 HTTP - текстовый протокол передачи документов между клиентом и сервером.
-Изначально разработан для передачи web страниц, сейчас используется так же как протокол для вызова API.<br>
+Изначально разработан для передачи web страниц, сейчас используется так же как протокол для API.<br>
 
 ---
 
@@ -138,7 +138,7 @@ Connection: close
 
 # HTTP клиент - GET
 
-```
+```go
 import (
     "net/http"
     "net/url"
@@ -167,7 +167,7 @@ resp, err := client.Do(req)
 
 # HTTP клиент - POST
 
-```
+```go
 type AddRequest struct {
   Id    int `json:"id"`
   Title string `json:"title"`
@@ -200,12 +200,12 @@ resp, err := client.Do(req)
 
 # HTTP клиент - работа с ответом
 
-```
+```go
 // выполняем запрос
 resp, err := client.Do(req)
 if err != nil {
   // или другая уместная обработка
-  log.Fatal(err)
+  return errors.Errorf(err)
 }
 
 // если ошибки не было - нам необходимо "закрыть" тело ответа
@@ -215,13 +215,13 @@ defer resp.Body.Close()
 // проверяем HTTP status ответа
 if resp.StatusCode != 200 {
   // обработка HTTP статусов зависит от приложения
-  log.Fatalf("unexpected http status: %s", resp.Status)
+  return errors.Errorf("unexpected http status: %s", resp.Status)
 }
 
 // возможно проверяем какие-то заголовки
 ct := resp.Header.Get("Content-Type")
 if ct != "application/json" {
-  log.Fatalf("unexpected content-type: %s", ct)
+  return errors.Errorf("unexpected content-type: %s", ct)
 }
 
 // считываем тело ответа (он может быть большим)
@@ -235,11 +235,12 @@ body, err := ioutil.ReadAll(resp.Body)
 Контекст в Go - это объект ограничивающий время выполнения запрос (кода) и/или предоставляющий контекстную информацию (например trace id) запроса.
 <br><br>
 Если у вас уже есть некоторый контекст 
-```
+
+```go
 func (h *MyHandler) DoSomething(ctx context.Context) error {
 
   // создаем запрос
-  req, _ := http.NewRequest("GET", "https://site.ru/some_api", nil)
+  req, _ := http.NewRequest(http.MethodGet, "https://site.ru/some_api", nil)
   
   // теперь запрос будет выполняться в рамках сtx
   req = req.WithContext(ctx)
@@ -256,7 +257,8 @@ func (h *MyHandler) DoSomething(ctx context.Context) error {
 # HTTP клиент - context
 
 Есть просто необходимо ограничить время выполнения запроса
-```
+
+```go
 // создаем новый контекст
 ctx := context.Background()
 ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
@@ -282,7 +284,8 @@ resp, err := client.Do(req)
 <br><br>
 
 Настроить пул соединений и другие параметры можно с помощью `http.Transport`
-```
+
+```go
 tr := &http.Transport{
 	MaxIdleConns:       10,
 	IdleConnTimeout:    30 * time.Second,
@@ -295,7 +298,7 @@ client := &http.Client{Transport: tr}
 
 # HTTP сервер
 
-```
+```go
 type MyHandler struct {
   // все нужные вам объекты: конфиг, логер, соединение с базой и т.п.
 }
@@ -319,7 +322,7 @@ func main() {
   }
 
   // запускаем сервер, это заблокирует текущую горутину
-  log.Fatal(server.ListenAndServe())
+  server.ListenAndServe()
 }
 
 ```
@@ -328,7 +331,7 @@ func main() {
 
 # HTTP сервер - обработчик
 
-```
+```go
 func (h *MyHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
   if req.URL.Path == "/search" {
     // разбираем аргументы
@@ -336,7 +339,8 @@ func (h *MyHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
     query := args.Get("query")
     limit, err := strconv.Atoi(args.Get("limit"))
     if err != nil {
-      panic("bad limit") // по-хорошему нужно возвращать HTTP 400
+      resp.WriteHeader(400)
+      return
     }
     
     // выполняем бизнес-логику
@@ -362,7 +366,7 @@ func (h *MyHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 С помощью типа `http.HandlerFunc` вы можете использовать обычную функцию в качестве HTTP обработчика
 
-```
+```go
 // функция с произвольным именем
 func SomeHttpHandler(resp http.ResponseWriter, req *http.Request) {
   // ...
@@ -386,7 +390,7 @@ func main() {
 
 # HTTP сервер - routing
 
-```
+```go
 type MyHandler struct {}
 
 func (h *MyHandler) Search(resp ResponseWriter, req *Request) {
@@ -418,7 +422,7 @@ func main() {
 
 # HTTP сервер - middleware
 
-```
+```go
 // это функция - middleware, она преобразует один обработчик в другой
 func (s *server) adminOnly(h http.HandlerFunc) http.HandlerFunc {
   return func(resp http.ResponseWriter, req *http.Request) {
@@ -457,7 +461,7 @@ func main() {
 
 # Пример Middleware - ограничение времени запроса
 
-```
+```go
 
 func (h *MyHandler) Search(resp ResponseWriter, req *Request) {
   ctx := req.Context()
@@ -485,7 +489,7 @@ mux.HandleFunc("/search", withTimeout(handler.Search, 5*time.Second))
 
 # Пример Middleware - авторизация
 
-```
+```go
 
 func (h *MyHandler) AddItem(resp ResponseWriter, req *Request) {
   ctx := req.Context()
@@ -512,6 +516,13 @@ func authorize(h http.HandlerFunc, timeout time.Duration) http.HandlerFunc {
 mux := http.NewServeMux()
 mux.HandleFunc("/add_item", authorize(handler.AddItem))
 ```
+
+---
+
+# Шутка про роутеры :)
+
+[dayssincelastgohttprouter.com](http://dayssincelastgohttprouter.com)
+
 ---
 
 # Полезные пакеты
@@ -520,9 +531,47 @@ mux.HandleFunc("/add_item", authorize(handler.AddItem))
 * [https://github.com/gorilla/mux](https://github.com/gorilla/mux)
 * [https://github.com/justinas/alice](https://github.com/justinas/alice)
 ]
+
 ---
 
-# REST vs RPC
+# Тестирование
+
+Очень полезный пакет `net/http/httptest`
+
+Пример:
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+)
+
+func main() {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "<html><body>Hello World!</body></html>")
+	}
+
+	req := httptest.NewRequest("GET", "http://example.com/foo", nil)
+	w := httptest.NewRecorder()
+	handler(w, req)
+
+	resp := w.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	fmt.Println(resp.StatusCode)
+	fmt.Println(resp.Header.Get("Content-Type"))
+	fmt.Println(string(body))
+
+}
+```
+
+---
+
+# REST, GraphQL, RPC
 
 `REST` - это архитектурный стиль разработки, при котором клиент и сервер обмениваются *документами*.
 По сути архитектура `REST` - это классические web страницы.
@@ -536,7 +585,7 @@ mux.HandleFunc("/add_item", authorize(handler.AddItem))
 * `RPC` довольно универсальный подход
 ---
 
-# Наивное REST API
+# Простейшее REST API
 
 Запрос
 ```
@@ -593,12 +642,20 @@ OpenAPI, изначально известное как Swagger это DSL (Doma
 
 ---
 
+# Дополнительные материалы
+
+* [en] [Классный урок про использование контекста](https://github.com/campoy/justforfunc/tree/master/09-context)
+* [ru] [Доклад про использование GraphQL в Go](https://youtu.be/tv8muwgj-Y4)
+* [en] [Про дизайн клиента и middleware](https://youtu.be/SlhG7bCRA6Q)
+
+---
+
 # Опрос
 
 .left-text[
 Заполните пожалуйста опрос
 <br><br>
-[https://otus.ru/polls/4636/](https://otus.ru/polls/4636/)
+[https://otus.ru/polls/4910/](https://otus.ru/polls/4636/)
 
 ]
 
