@@ -49,7 +49,7 @@ background-image: url(img/message.svg)
 Например:
 
 * есть опыт работы с PostgreSQL в Go
-* есть опыт работы с дургим SQL БД в Go
+* есть опыт работы с другим SQL БД в Go
 * есть опыт работы с PostgreSQL, но не в Go
 * нет опыта работы с PostgreSQL, но есть опыт с другими SQL БД
 * нет опыта работы с SQL БД
