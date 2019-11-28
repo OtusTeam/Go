@@ -705,6 +705,32 @@ FAIL	_/Users/mialinx/foobar	0.016s
 
 ---
 
+# Test coverage
+
+Coverage - процент кода, задействованного при тестировании.
+<br><br>
+Запуск с подсчетом покрытия:
+```
+% go test -cover
+PASS
+coverage: 42.9% of statements
+ok      size    0.026s
+```
+
+Сохранить статистику в файл:
+```
+% go tool cover -func=coverage.out
+size.go:    Size          42.9%
+total:      (statements)  42.9%
+```
+
+Посмотреть отчет:
+```
+$ go tool cover -html=coverage.out
+```
+
+---
+
 # Best practices тестирования
 
 .big-list[
