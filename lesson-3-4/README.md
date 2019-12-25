@@ -48,7 +48,7 @@ background-size: 130%
 
 .big-list[
 * Что такое gRPC и HTTP/2
-* Всоминаем Protocol buffers
+* Вспоминаем Protocol buffers
 * Прямая и обратная совместимость в Protocol buffers
 * Описание API с помощью Protobuf
 * Генерация кода для GRPC клиента и сервера
@@ -328,7 +328,7 @@ message Result {
 - number (int32/64 etc.): 0
 - bytes: пустой массив
 - enum: первое значение
-- repeated: пустой массивФ
+- repeated: пустой массив
 - Message - зависит от языка (https://developers.google.com/protocol-buffers/docs/reference/go-generated#singular-message)
 в го- nil
 
