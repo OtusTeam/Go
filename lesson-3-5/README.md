@@ -26,7 +26,7 @@ background-image: url(img/message.svg)
 
 # Работа с SQL
 
-### Дмитрий Смаль
+### Дмитрий Смаль, Елена Граховац
 
 ---
 
@@ -44,9 +44,21 @@ background-image: url(img/message.svg)
 
 ---
 
-# Установка PostgreSQL
+# Напишите в чат о вашем опыте с PostgreSQL
 
-В консоли:
+Например:
+
+* есть опыт работы с PostgreSQL в Go
+* есть опыт работы с другим SQL БД в Go
+* есть опыт работы с PostgreSQL, но не в Go
+* нет опыта работы с PostgreSQL, но есть опыт с другими SQL БД
+* нет опыта работы с SQL БД
+
+---
+
+# Работаем с PostgreSQL локально
+
+Устанавливаем сервер из консоли (пример для Ubuntu):
 ```
 # обновить пакеты
 $ sudo apt-get update
@@ -57,11 +69,15 @@ $ sudo apt-get install postgresql-10
 # запустить PostgreSQL
 $ sudo systemctl start postgresql
 
-# Подключаемся под пользователем "по-умолчанию"
+# подключиться под пользователем, созданным по умолчанию
 $ sudo -u postgres psql
 ```
 
-В клиенте СУБД:
+---
+
+# Работаем с PostgreSQL локально
+
+Работаем в клиенте СУБД:
 ```sql
 -- создаем "проектного" пользователя СУБД
 postgres=# create user myuser password 'mypass';
@@ -71,10 +87,37 @@ CREATE ROLE
 postgres=# create database mydb owner myuser;
 CREATE DATABASE
 ```
+
+Удобный клиент с графическим интерфейсом: https://www.pgadmin.org/download/
+
+---
+
+# Работаем с PostgreSQL локально через Docker
+
+(См. https://hub.docker.com/_/postgres)
+
+Создаем сеть для доступа между контейнерами:
+
+```
+docker network create postgres
+```
+
+Запускаем контейнер с сервером PostgreSQL:
+```
+docker run --network postgres --name dpostgres \
+    -e POSTGRES_PASSWORD=password -d postgres
+```
+
+Подключаемся к серверу:
+```
+docker run --network postgres -it --rm postgres \
+    psql -h dpostgres -U postgres
+```
+
 ---
 
 
-# DDL
+# Data Definition Language (DDL)
 
 Создание простой таблицы и индекса (файл 001.sql):
 
@@ -99,7 +142,7 @@ psql 'host=localhost user=myuser password=mypass dbname=mydb'  < 001.sql
 ```
 ---
 
-# DML
+# Data Manipulation Language (DML)
 
 Добавление строки:
 
@@ -119,7 +162,7 @@ where id = 1;
 
 ---
 
-# DQL
+# Data Query Language (DQL)
 
 Получение одной строки:
 ```sql
@@ -143,16 +186,15 @@ ResultSet:
 ```
 ---
 
-
-# Подключение к СУБД из Go
+# Подключение к PostgreSQL из Go, простейший вариант
 
 Создание подключения:
 
-```
+```go
 import "database/sql"
 import _ "github.com/jackc/pgx/stdlib"
 
-dns := "..."
+dsn := "..."
 db, err := sql.Open("pgx", dsn)  // *sql.DB
 if err != nil {
   log.Fatalf("failed to load driver: %v", err)
@@ -162,13 +204,14 @@ if err != nil {
 
 Использование подключения:
 
-```
+```go
 err := db.PingContext(ctx)
 if err != nil {
   return xerrors.Errorf("failed to connect to db: %v", err)
 }
 // работаем с db
 ```
+
 ---
 
 # DataSourceName
@@ -203,7 +246,7 @@ DSN - строка подключения к базе, содержит все �
 <br><br>
 
 Настройки пула:
-```
+```go
 // Макс. число открытых соединений от этого процесса
 db.SetMaxOpenConns(n int)
 
@@ -230,9 +273,17 @@ db.SetConnMaxLifetime(d time.Duration)
 
 ---
 
+# Подключение к PostgreSQL из Go, пример из реального мира
+
+https://github.com/rumyantseva/pgconf
+
+В реальном мире покажите ваш конфиг вашим DBA!
+
+---
+
 # Выполнение запросов
 
-```
+```go
 query := `insert into events(owner, title, descr, start_date, end_date) 
   values($1, $2, $3, $4, $5)`
 
@@ -254,7 +305,7 @@ rowsAffected, err := result.RowsAffected() // int64
 
 # Получение результатов
 
-```
+```go
 query := `
   select id, title, descr
   from events
@@ -284,7 +335,7 @@ if err := rows.Err(); err != nil {
 
 # Объект sql.Rows
 
-```
+```go
 // возвращает имена колонок в выборке
 rows.Columns() ([]string, error)
 
@@ -308,7 +359,7 @@ rows.Error() error
 
 # Получение одной строки
 
-```
+```go
 query := "select * from events where id = $1"
 
 row := db.QueryRowContext(ctx, query, id)
@@ -332,7 +383,7 @@ if err == sql.ErrNoRows {
 *PreparedStatement* - это заранее разобранный запрос, который можно выполнять повторно.
 *PreparedStatement* - временный объект, который *создается в СУБД* и живет в рамках сессии, или пока не будет закрыт.
 
-```
+```go
 // создаем подготовленный запрос
 stmt, err := db.Prepare("delete from events where id = $1") // *sql.Stmt
 if err != nil {
@@ -358,7 +409,7 @@ for _, id := range ids {
 `*sql.DB` - это пул соединений. Даже последовательные запросы могут использовать *разные* соединения с базой.
 <br><br>
 Если нужно получить одно конкретное соединение, то
-```
+```go
 conn, err := db.Conn(ctx)  // *sql.Conn
 
 // вернуть соединение в pool
@@ -380,7 +431,7 @@ rows, err := conn.QueryContext(ctx, query2, arg1, arg2)
 На уровне SQL для транзакций используются отдельные запросы: `BEGIN`, `COMMIT`, `ROLLBACK`.
 <br><br>
 Работа с транзакциями в Go:
-```
+```go
 tx, err := db.BeginTx(ctx, nil)  // *sql.Tx
 if err != nil {
   log.Fatal(err)
@@ -402,7 +453,7 @@ if err != nil {
 # Основные методы
 
 Определены у `*sql.DB`, `*sql.Conn`, `*sql.Tx`, `*sql.Stmt`:
-```
+```go
 // изменение данных
 ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error)
 
@@ -414,7 +465,7 @@ QueryRowContext(ctx context.Context, query string, args ...interface{}) *Row
 ```
 <br><br>
 Внимание, ошибка:
-```
+```go
 _, err := db.QueryContext(ctx, "delete from events where id = $1", 42)
 ```
 ---
@@ -431,8 +482,8 @@ create table users (
 );
 ```
 
-Для обработки NULL в Go предлагается использовать специальные типы:
-```
+Для обработки `NULL` в Go предлагается использовать специальные типы:
+```go
 var id, realAge int64
 var name string
 var age sql.NullInt64
@@ -450,7 +501,7 @@ if age.Valid {
 # SQL Injection
 
 Опасно:
-```
+```go
 query := "select * from users where name = '" + name + "'"
 query := fmt.Sprintf("select * from users where name = '%s'", name)
 ```
@@ -460,16 +511,18 @@ query := fmt.Sprintf("select * from users where name = '%s'", name)
 ```
 
 Правильный подход - использовать `placeholders` для подстановки значений в SQL:
-```
+```go
 row := db.QueryRowContext(ctx, "select * from users where name = $1", name)
 ```
 
 Однако это не всегда возможно. Так работать не будет:
-```
+```go
 db.QueryRowContext(ctx, "select * from $1 where name = $2", table, name)
 db.QueryRowContext(ctx, "select * from user order by $1 limit 3", order)
-
 ```
+
+Проверить код на инъекции (и другие проблемы безопасности): https://github.com/securego/gosec
+
 ---
 
 
@@ -486,16 +539,16 @@ db.QueryRowContext(ctx, "select * from user order by $1 limit 3", order)
 
 # Расширение sqlx
 
-`jmoiron/sqlx` - обертка на `database/sql`, прозрачно расширяющая стандартный функционал.
+`jmoiron/sqlx` - обертка, прозрачно расширяющая стандартную библиотеку `database/sql`.
 <br><br>
 * `sqlx.DB` - обертка над `*sql.DB`
 * `sqlx.Tx` - обертка над `*sql.Tx`
 * `sqlx.Stmt` - обертка над `*sql.Stmt`
 * `sqlx.NamedStmt` - PreparedStatement с поддержкой именованых параметров
 
-Подключение `jmoiron/sqlx`
+Подключение `jmoiron/sqlx`:
 
-```
+```go
 import "github.com/jmoiron/sqlx"
 
 db, err := sqlx.Open("pgx", dsn)  // *sqlx.DB
@@ -506,10 +559,10 @@ rows, err := db.QueryContext("select * from events") // *sqlx.Rows
 ```
 ---
 
-# sqlx - именованные placeholder-ы
+# sqlx: именованные placeholder'ы
 
 Можно передавать параметры запроса в виде словаря:
-```
+```go
 sql := "select * from events where owner = :owner and start_date = :start"
 rows, err := db.NamedQueryContext(ctx, sql, map[string]interface{}{
   "owner": 42,
@@ -518,7 +571,7 @@ rows, err := db.NamedQueryContext(ctx, sql, map[string]interface{}{
 ```
 
 Или структуры:
-```
+```go
 type QueryArgs{
   Owner int64
   Start string
@@ -531,10 +584,10 @@ rows, err := db.NamedQueryContext(ctx, sql, QueryArgs{
 ```
 ---
 
-# sqlx - сканирование
+# sqlx: сканирование
 
 Можно сканировать результаты в словарь:
-```
+```go
 sql := "select * from events where start_date > $1"
 
 rows, err := db.QueryContext(ctx, sql, "2020-01-01") // *sqlx.Rows
@@ -550,7 +603,7 @@ for rows.Next() {
 ```
 ---
 
-# sqlx - сканирование
+# sqlx: сканирование
 
 Можно сканировать результаты структуру:
 ```
@@ -577,25 +630,61 @@ for rows.Next() {
 ```
 ---
 
-# Драйвер для Postgres
+# Драйверы для Postgres
 
-Стандартный драйвер: [https://github.com/lib/pq](https://github.com/lib/pq)
-<br><br>
-Альтернатива: [https://github.com/jackc/pgx](https://github.com/jackc/pgx)
-
-* Лучшая производительность
-* Поддержка ~60 Postgres-специфичных типов данных
-* Many more: [https://github.com/jackc/pgx#features](https://github.com/jackc/pgx#features) 
+* Лучший драйвер на текущий момент: [https://github.com/jackc/pgx](https://github.com/jackc/pgx)
+* Другой часто используемый драйвер (менее производительный): [https://github.com/lib/pq](https://github.com/lib/pq)
 
 ---
 
-# Ссылки
+# Миграции
+
+* [https://github.com/pressly/goose](https://github.com/pressly/goose) - можно использовать как cli-тулзу и как библиотеку
+* [https://flywaydb.org/](https://flywaydb.org/) - пожалуй, самая популярная штука для миграций
+
+*Protip*: flyway можно запускать из докер-контейнера перед запуском основного приложения, см. https://github.com/flyway/flyway-docker
+
+---
+
+# ORM
+
+* [https://gorm.io/](https://gorm.io/) - использует пустые интерфейсы :(
+* [https://github.com/go-reform/reform](https://github.com/go-reform/reform) - использует кодогенерацию, но разработка немного заброшена
+
+Пример использования (не идеальный код, но может пригодиться): https://github.com/rumyantseva/mif
+
+---
+
+# Другие ресурсы для изучения
 
 .big-list[
-* [http://go-database-sql.org/index.html](http://go-database-sql.org/index.html)
-* [https://golang.org/pkg/database/sql](https://golang.org/pkg/database/sql)
-* [https://jmoiron.github.io/sqlx](https://jmoiron.github.io/sqlx)
+* [en] [https://github.com/rumyantseva/pglocal](Пример окружения для локальной разработки)
+* [ru] [https://habr.com/ru/company/oleg-bunin/blog/461935/](Статья и видео о тонкастях работы с Postgres в Go)
+* [en] [http://go-database-sql.org/index.html](Полезная документация по работе с Postgres из Go)
+* [en] [https://golang.org/pkg/database/sql](Документация к database/sql)
+* [en] [https://jmoiron.github.io/sqlx](sqlx)
 ]
+
+---
+
+# Домашнее задание
+
+Изменить код сервиса-календаря так, чтобы события хранились в базе данных.
+
+---
+
+# Куда задавать вопросы?
+
+* Вопросы по домашнему заданию можно задавать в чат с преподавателем на сайте
+* Вопросы по материалам урока можно задавать в Слаке (#go-2019-08)
+* Чтобы получить материалы в закрытых репозиториях, пришлите ваш github-ник: elena@grahovac.me
+
+---
+
+# Следующее занятие
+
+NoSQL Базы Данных.
+
 ---
 
 # Опрос
@@ -603,7 +692,7 @@ for rows.Next() {
 .left-text[
 Заполните пожалуйста опрос
 <br><br>
-[https://otus.ru/polls/4749/](https://otus.ru/polls/4749/)
+[https://otus.ru/polls/4912/](https://otus.ru/polls/4912/)
 ]
 
 .right-image[
