@@ -11,6 +11,7 @@
 
 ## Основной обработчик
 https://cut-service.com/fill/300/200/www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg
+
 <---- микросервис ----><- размеры превью -><--------- URL исходного изображения --------------------------------------------->
 
 В URL выше мы видим:
