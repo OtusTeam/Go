@@ -15,7 +15,7 @@ https://cut-service.com/fill/300/200/www.audubon.org/sites/default/files/a1_1902
 <---- микросервис ----><- размеры превью -><--------- URL исходного изображения --------------------------------->
 
 В URL выше мы видим:
-- https://cut-service.com/crop/300/200/ - endpoint нашего сервиса,
+- https://cut-service.com/fill/300/200/ - endpoint нашего сервиса,
 в котором 300x200 - это размеры финального изображения.
 - www.audubon.org/sites/default/files/a1_1902_16_barred-owl_sandra_rothenberg_kk.jpg - 
 адрес исходного изображения; сервис должен скачать его, произвести resize, закэшировать и отдать клиенту.
