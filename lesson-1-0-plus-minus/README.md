@@ -2,17 +2,6 @@
 
 ---
 
-
-class: white
-background-image: url(img/message.svg)
-.top.icon[![otus main](img/logo.png)]
-
-# Плюсы и минусы языка Go
-
-### Антон Телышев
-
----
-
 class: top white
 background-image: url(img/sound.svg)
 background-size: 130%
@@ -26,11 +15,24 @@ background-size: 130%
   ## > Напишите в чат
   ### **+** если все хорошо
   ### **-** если есть проблемы cо звуком или с видео
-
-
-  ### !включить запись!
 ]
 
+---
+
+class: white
+background-image: url(img/message.svg)
+.top.icon[![otus main](img/logo.png)]
+
+# Плюсы и минусы языка Go
+
+### Алексей Бакин
+
+---
+# Как проходит занятие
+
+* ### Активно участвуем - задаем вопросы.
+* ### Чат вижу - могу ответить не сразу.
+* ### После занятия - оффтопик, ответы на любые вопросы.
 
 ---
 
@@ -50,53 +52,32 @@ background-size: 130%
 
 ---
 
-# Преподаватель
+# Кто-то уже использует Go?
 
-###Антон Телышев
+.left-text[
+Пройдите, пожалуйста, опрос.
+<br/><br/>
+Так мы лучше узнаем вас и сможем
+подстраивать программу курса.
+<br/><br/>
+Ссылка в чате.
+]
 
--- Ведущий разработчик в “Центр недвижимости от Сбербанка” (ДомКлик) <b>(Golang)</b><br><br>
-
--- Окончил магистратуру МГТУ им Н.Э. Баумана (кафедра “Компьютерные системы и сети”)<br><br>
-
--- Разрабатывал системы мониторинга и внутренние сервисы в Mail.Ru Group <b>(Python/Golang)</b><br><br>
-
--- Разрабатывал Kaspersky Fraud Prevention Cloud <b>(Python/C++)</b><br><br>
-
--- Окончил Технопарк Mail.Ru (системный архитектор), где впоследствии преподавал "Подготовительную программу по С++"<br><br>
-
--- Telegram: @antonboom
-
+.right-image[
+![](img/gopher9.png)
+]
 
 ---
 
-# Кто уже пишет на Go?
+# Рейтинг StackOverflow 
 
-- по работе
-- для себя
-- не пишу
+### Cамый популярный язык
+https://insights.stackoverflow.com/survey/2019#technology-_-programming-scripting-and-markup-languages
 
+<br/>
 
----
-
-class: bottom
-background-image: url(img/rating-1.png)
-background-size: 40%
-
-# Рейтинг StackOverflow (самый популярный)
-
-https://proglib.io/p/stack-overflow-2018/
-
-
----
-
-class: bottom
-background-image: url(img/rating-2.png)
-background-size: 40%
-
-# Рейтинг StackOverflow (самый нужный)
-
-https://proglib.io/p/stack-overflow-2018/
-
+### Самый любимый/ужасный/желаемый(чтобы выучить)
+https://insights.stackoverflow.com/survey/2019#technology-_-most-loved-dreaded-and-wanted-languages
 
 ---
 
@@ -382,10 +363,6 @@ $ go test [-bench] [-coverprofile] [-race]
 
 -- https://github.com/kyoh86/richgo
 
-.right-image[
-  ![](img/jake.gif)
-]
-
 
 ---
 
@@ -454,7 +431,7 @@ https://habr.com/ru/company/mailru/blog/462811/
 
 ---
 
-# Недостатки Go, а какие чувствуете вы?
+# Недостатки Go (мнение одного разработчика)
 
 - Часть вещей приходится писать руками
 - Плюсовики с трудом переходят на Go (в отличие от питонистов)
@@ -466,15 +443,9 @@ https://habr.com/ru/company/mailru/blog/462811/
 - Нет перечислений (enums)
 - Отсутствие препроцессинга
 
+<br/>
 
----
-
-# Разберем код программы на Go
-
-
-### Книга "Go in Action"
-https://github.com/goinaction/code/tree/master/chapter2/sample
-
+У вас может быть свой список недостатков!
 
 ---
 
@@ -483,6 +454,8 @@ https://github.com/goinaction/code/tree/master/chapter2/sample
 -- Don't communicate by sharing memory, share memory by communicating.
 
 -- Concurrency is not parallelism.
+
+-- Channels orchestrate; mutexes serialize
 
 -- The bigger the interface, the weaker the abstraction.
 
@@ -511,16 +484,23 @@ favorite.
 
 <br>
 https://go-proverbs.github.io/
+<br>
+https://habr.com/ru/post/272383/
 
+---
+
+# Разберем код программы на Go
+
+https://github.com/OtusGolang/webinars_practical_part/tree/master/1.1_first_go_program
 
 ---
 
 # Опрос
 
 .left-text[
-  Заполните пожалуйста опрос
+  Заполните пожалуйста опрос о занятии.
   <br><br>
-  [https://otus.ru/polls/6302/](https://otus.ru/polls/6302/)
+  Ссылка в чате.
 ]
 
 .right-image[
@@ -567,13 +547,12 @@ https://www.andmed.org/
 ---
 
 class: bottom
-background-image: url(img/rating-3.png)
+background-image: url(img/rating-zp.png)
 background-size: 48%
 
 # P.S. Рейтинг зарплат (Мой круг)
 
-https://habr.com/ru/company/moikrug/blog/420391/
-
+https://habr.com/ru/company/habr_career/blog/485146
 
 ---
 
