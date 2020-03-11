@@ -24,9 +24,9 @@ class: white
 background-image: url(img/message.svg)
 .top.icon[![otus main](img/logo.png)]
 
-# Инструментарий Go, <br>тестирование
+# Инструментарий и начало <br> работы с Go
 
-### Дмитрий Смаль
+### Антон Телышев
 
 ---
 
@@ -38,15 +38,19 @@ background-image: url(img/message.svg)
 * Кросс-компиляция
 * Модули и зависимости: go mod
 * Форматирование кода: go fmt, goimports
-* Линтеры: go vet, golint, металинтеры
-* Тестирование Go программ
-* Пакет testing
-* Паттерны и анти-паттерны unit-тестирования
+* Линтеры: go vet, golint, gometalinter, golangci-lint
+* Как сдавать домашние задания?
 ]
 
 ---
 
 # Установка Go
+
+<b>Getting Started</b></br>
+https://golang.org/doc/install<br><br>
+
+<b>Downloads</b><br>
+https://golang.org/dl/<br><br>
 
 Проще всего через `apt-get`
 ```
@@ -55,11 +59,11 @@ sudo apt-get update
 sudo apt-get install golang
 ```
 
-Есть возможность просто скачать с оф. сайта
+Или просто скачать с официального сайта
 ```
-wget https://dl.google.com/go/go1.13.linux-amd64.tar.gz
+wget https://dl.google.com/go/go1.14.linux-amd64.tar.gz
 
-sudo tar -C /usr/local -xzf go1.13.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.14.linux-amd64.tar.gz
 
 sudo ln -s /usr/local/go/bin/go /usr/bin/go
 ```
@@ -77,10 +81,8 @@ sudo ln -s /usr/local/go/bin/go /usr/bin/go
 Однако, вы можете узнать `GOROOT`
 
 ```
-go env
-...
+$ go env | grep ROOT
 GOROOT="/usr/local/go"
-...
 ```
 
 И можете посмотреть исходный код Go =)
@@ -115,60 +117,48 @@ export GOPATH=/path/your/go/projects
 
 # Загрузка пакетов
 
-Давайте выполним команду: `go get -d github.com/golang/protobuf/...`
+Давайте выполним команду:
+```
+go get -d github.com/OtusGolang/webinars_practical_part/1.1_first_go_program
+```
 
 ```
-$ tree -L 5 ~/go
-/home/mialinx/go
+$ tree -L 5 $GOPATH
+/Users/anthony/go/
+├── bin
+├── pkg
 └── src
-    └── github.com
-        └── golang
-            └── protobuf
-                ├── AUTHORS
-                ├── CONTRIBUTORS
-                ├── descriptor
-                ├── go.mod
-                ├── go.sum
-                ├── jsonpb
-                ├── LICENSE
-                ├── Makefile
-                ├── proto
-                ├── protoc-gen-go
-                ├── ptypes
+    └──github.com/OtusGolang
+        └── webinars_practical_part
+            └── 1.1_first_go_program
                 ├── README.md
-                └── regenerate.sh
-....
+                ├── feeds.go
+                ├── go.mod
+                ├── main.go
+                └── searcher
+                    ├── rss.go
+                    └── search.go
+3 directories, 6 files
 ```
 
 ---
 
 # Установка пакетов
 
-Теперь выполним команду `go install github.com/golang/protobuf/...`
+Теперь выполним команду
+```
+go install github.com/OtusGolang/webinars_practical_part/1.1_first_go_program
+```
 
 ```
-$ tree -L 6 ~/go
-/home/mialinx/go
-├── bin
-│   └── protoc-gen-go
-├── pkg
-│   └── linux_amd64
-│       └── github.com
-│           └── golang
-│               └── protobuf
-│                   ├── descriptor.a
-│                   ├── jsonpb
-│                   ├── jsonpb.a
-│                   ├── proto
-│                   ├── proto.a
-│                   ├── protoc-gen-go
-│                   ├── ptypes
-│                   └── ptypes.a
-└── src
-    └── github.com
-        └── golang
-            └── protobuf
-....
+$ ls $GOPATH/bin
+1.1_first_go_program
+```
+
+Можем запустить!
+```
+$ 1.1_first_go_program
+...
 ```
 ---
 
@@ -180,11 +170,14 @@ $ tree -L 6 ~/go
 <br><br>
 `go get` (без флажка `-d`) - так же вызовет `install`.
 <br><br>
+`go run prog.go` - сборка и запуск программы.
+<br><br><br>
 ### Многоточия
 
-`github.com/golang/protobuf/...` &lt;= многоточие тут означает "и все дочерние пакеты".
-<br><br>
-Это необходимо если в пакет сложный, и содержит под-пакеты.
+`go get github.com/golang/protobuf/...` - многоточие тут означает
+"и все дочерние пакеты".
+<br>
+Это необходимо если в пакет сложный, и содержит подпакеты.
 <br>
 Для простых достаточно `go get github.com/beevik/ntp`
 
@@ -320,7 +313,7 @@ $ tree -L 4 ~/go/pkg
 $ cat go.mod
 module github.com/mialinx/foobar
 
-go 1.13
+go 1.14
 
 require (
 	github.com/beevik/ntp v0.2.0 // indirect
@@ -341,10 +334,12 @@ require (
 Есть еще более простой способ управлять зависимостями: просто редактируйте код
 ```
 package main
+
 import (
 	"fmt"
 	"github.com/go-loremipsum/loremipsum"
 )
+
 func main() {
 	fmt.Println(loremipsum.New().Word())
 }
@@ -523,10 +518,14 @@ $ echo $?
 # Металинтеры
 
 Металинтеры - обертка, запускающая несколько линтеров за один проход.
+<br><br>
 
-```
-$ go get github.com/golangci/golangci-lint/cmd/golangci-lint
-```
+<b>Deprecated</b>:<br>
+https://github.com/alecthomas/gometalinter
+<br><br>
+
+<b>Модно-молодёжно</b>:<br>
+https://github.com/golangci/golangci-lint/
 
 ```
 $ ~/go/bin/golangci-lint run ./run.go
@@ -541,216 +540,11 @@ $ echo $?
 1
 ```
 
-Подробнее [https://github.com/golangci/golangci-lint](https://github.com/golangci/golangci-lint)
 ---
 
-# Тестирование
+# Как сдавать домашние задания?
 
-.main-image[
-  ![img/go_ok_no.png](img/go_ok_no.png)
-]
-
----
-
-# Особые суффиксы файлов
-
-```
-$ tree ~/go/src/github.com/boltdb/bolt/
-/home/user/go/src/github.com/boltdb/bolt/
-├── bolt_386.go
-├── bolt_amd64.go
-...
-├── bolt_linux.go
-├── bolt_windows.go
-...
-├── bucket.go
-├── bucket_test.go
-...
-├── db.go
-├── db_test.go
-...
-```
-
-* `_386`, `_amd64` - только для указанной архитектуры
-* `_linux`, `_windows` - только для указанной OS
-* `_test` - тесты для пакета
----
-
-# Пример кода
-
-В файле `foobar/count.go`
-```
-package foobar
-
-func Count(s string, r rune) int {
-	var cnt int
-	for _, l := range s {
-		if l == r {
-			cnt += 1
-		}
-	}
-	return cnt
-}
-```
-
----
-
-# Пример теста
-
-В файле `foobar/count_test.go`
-```
-package foobar
-
-import "testing"
-
-func TestCount(t *testing.T) {
-	s := "qwerasdfe"
-	e := 2
-	if c := Count(s, 'e'); c != e {
-		t.Fatalf("bad count for %s: got %d expected %d", s, c, e)
-	}
-}
-```
-
-Важно:
-* `package` тот же что и в основном коде
-* Все тесты - *экспортируемые* функции, начинающиеся с букв `Test`
-* Тесты принимают `t` - API для установки результата тестирования
-    
----
-
-# Запуск тестов
-
-Тест текущей директории
-```
-$ cd project/foobar
-$ go test
-PASS
-ok  	_/home/user/foobar	0.011s
-```
-
-Тест произвольного пакета
-```
-$ go get github.com/gorilla/mux
-$ go test github.com/gorilla/mux
-ok  	github.com/gorilla/mux	0.031s
-```
-
-Вместе со вложенными пакетами
-```
-go test google.golang.org/grpc/...
-```
----
-
-# Пакет `testing`
-
-```
-t.Fail()   // отметить тест как сломаный, но продолжит выполнение
-
-t.FailNow()  // отметить тест как сломаный и прекратить текущий тест
-
-t.Logf(formar string, ...interface{})  // вывести сообщение с отладкой
-
-t.Errorf(formar string, ...interface{})  // t.Logf + t.Fail
-
-t.Fatalf(formar string, ...interface{})  // t.Logf + t.FailNow
-
-t.SkipNow()  // пропустить тест
-```
-
----
-
-# Пакет `github.com/stretchr/testify`
-
-```
-package foobar
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-)
-
-func TestCount(t *testing.T) {
-	s := "qwerasdfe"
-
-	require.Equal(t, Count(s, 'e'), 2, "counting 'e' in "+s)
-
-	require.Equal(t, Count(s, 'x'), 0, "counting 'x' in "+s)
-
-	require.Equal(t, Count(s, 'f'), 0, "counting 'f' in "+s)
-}
-```
-
----
-
-# Вывод testify
-
-```
-$ go test
---- FAIL: TestCount (0.00s)
-    require.go:157:
-        	Error Trace:	count_test.go:16
-        	Error:      	Not equal:
-        	            	expected: 1
-        	            	actual  : 0
-        	Test:       	TestCount
-        	Messages:   	counting 'f' in qwerasdfe
-FAIL
-exit status 1
-FAIL	_/Users/mialinx/foobar	0.016s
-```
-
-В данном случае ошибка в тесте (!)
-
----
-
-# Test coverage
-
-Coverage - процент кода, задействованного при тестировании.
-<br><br>
-Запуск с подсчетом покрытия:
-```
-% go test -cover
-PASS
-coverage: 42.9% of statements
-ok      size    0.026s
-```
-
-Сохранить статистику в файл:
-```
-% go tool cover -func=coverage.out
-size.go:    Size          42.9%
-total:      (statements)  42.9%
-```
-
-Посмотреть отчет:
-```
-$ go tool cover -html=coverage.out
-```
-
----
-
-# Best practices тестирования
-
-.big-list[
-* Тесты должны быть достоверными и исчерпывающим
-* Тесты - это тоже код (readability/maintainability)
-* Один тест - один тестовый случай
-* Тесты должны быть изолированы (нет веерных поломок)
-* Тесты должны отрабатывать быстро
-]
-
----
-
-# Типичные ошибки тестирования
-
-.big-list[
-* Вывод чего-либо на экран, для сравнения глазами
-* Слишком много проверок в одном тесте
-* Зависимости от внешних файлов (вне репозитория)
-* Неполное тестирование
-]
+https://github.com/OtusGolang/home_work/blob/master/HOWTO.md
 
 ---
 
@@ -759,7 +553,7 @@ $ go tool cover -html=coverage.out
 .left-text[
 Заполните пожалуйста опрос
 <br><br>
-[https://otus.ru/polls/4892/](https://otus.ru/polls/4892/)
+[https://otus.ru/polls/8448/](https://otus.ru/polls/8448/)
 ]
 
 .right-image[
